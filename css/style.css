@@ -1,12 +1,12 @@
 /* List Scrum Total */
-[class^="groupbylist-scrum-total-"],
-[class^="groupbylist-consumed-total-"] {
+.groupbylist-scrum-total,
+.groupbylist-consumed-total {
 	display: inline-block;
 	padding-left: 1em;
 	color: rgb(0, 101, 128);
     font-size: 16px;
     font-weight: bold;
 }
-[class^="groupbylist-consumed-total-"] {
+.groupbylist-consumed-total {
 	opacity: 0.5;
 }
