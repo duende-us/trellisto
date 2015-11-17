@@ -2,7 +2,7 @@
 
 var getCardScrum = function(el) {
     var title        = $(el).find('.list-card-title').text(),
-        regExpScrum  = /\(([0-9]+)\)/,
+        regExpScrum  = /\(\d*\.?\d*\)/,
         matchesScrum = regExpScrum.exec(title),
         scrum        = 0;
 
@@ -15,7 +15,7 @@ var getCardScrum = function(el) {
 
 var getCardConsumed = function(el) {
      var title           = $(el).find('.list-card-title').text(),
-         regExpConsumed  = /\[([0-9]+)\]/,
+         regExpConsumed  = /\[\d*\.?\d*\]/,
          matchesConsumed = regExpConsumed.exec(title),
          consumed        = 0;
 
@@ -166,10 +166,9 @@ var createCards = function () {
                     groupTitle        = $(grp).find('.window-module-title');
 
                     $.each(cards, function (i, card) {
-                        scrumTotal    += parseInt(getCardScrum(card));
-                        consumedTotal += parseInt(getCardConsumed(card));
+                        scrumTotal    += parseFloat(getCardScrum(card));
+                        consumedTotal += parseFloat(getCardConsumed(card));
                     });
-
                     
                     $('<span class="'+consumedClassName+'">'+consumedTotal+'</span><span class="'+scrumClassName+'">'+scrumTotal+'</span>').appendTo(groupTitle);
                     
