@@ -159,16 +159,19 @@ var createCards = function () {
                     });
                 }
 
+                var trellistoList = '#trellisto-pop-over-filter .trellisto-pop-over-list';
+
                 $('#trellisto-pop-over-filter .trellisto-pop-over-list').html('');
-                $('<label for="filter-all"><input type="checkbox" class="list-filter" id="filter-all" checked>All</label>').appendTo('#trellisto-pop-over-filter .trellisto-pop-over-list')
+                $('<label for="filter-all"><input type="checkbox" class="list-filter" id="filter-all" checked>All</label>').appendTo(trellistoList);
 
                 // For each unique list name, create a group of cards
                 $.each(uniquelists, function (i, el) {
 
                     var scrumTotal    = 0,
-                        consumedTotal = 0;
+                        consumedTotal = 0,
+                        className     = el;//.replace(/\s+/g, '').toLowerCase();
 
-                    var module = '<div class="window-module"><div class="window-module-title"><span class="window-module-title-icon icon-lg icon-list"></span><h3>'+el+'</h3></div>'
+                    var module = '<div class="window-module"><div class="window-module-title"><span class="window-module-title-icon icon-lg icon-list"></span><h3>'+el+'</h3></div>';
                     
                     module += '<div class="u-gutter float-cards u-clearfix js-list">';
 
@@ -188,12 +191,75 @@ var createCards = function () {
                     module += '</div></div>';
 
                     // Append the group
-                    $(module).appendTo('.js-cards-content ');
+                    $(module).appendTo('.js-cards-content');
 
                     // Add to filter list
-                    $('<label for="filter-'+el.toLowerCase()+'"><input type="checkbox" class="list-filter" id="filter-'+el.toLowerCase()+'" checked>'+el+'</label>').appendTo('#trellisto-pop-over-filter .trellisto-pop-over-list')
+                    $('<label for="filter-'+className+'"><input type="checkbox" class="list-filter" id="filter-'+className+'">'+el+'</label>').appendTo(trellistoList);
 
                 });
+                
+                $(trellistoList).on('change', '.list-filter', function (e) {
+                    e.preventDefault();
+                    var currentId = this.id.replace('filter-', '');
+                    if (currentId == 'all') {
+                        $('.list-card-container').fadeIn();
+                        $('.list-filter').not($(this)).attr('checked', false);
+                        $(this).parent().siblings('.trellisto-is-checked').removeClass('trellisto-is-checked');
+                        $(this).parent().addClass('trellisto-is-checked');
+                    }
+                    else {
+                        $('#filter-all').attr('checked', false);
+                        $('#filter-all').parent().removeClass('trellisto-is-checked');
+                        
+                        $('.list-filter:checked').each(function() {
+                            $(this).parent().addClass('trellisto-is-checked');
+                            currentId = this.id.replace('filter-', '');
+                            cards = $('.list-card-container').find('.list-card-position:contains("' + currentId + '")').parents('.list-card-container').filter(':hidden');
+                            $(cards).fadeIn();
+                        });
+                        $('.list-filter').not(':checked').each(function() {
+                            $(this).parent().removeClass('trellisto-is-checked');
+                            currentId = this.id.replace('filter-', '');
+                            cards = $('.list-card-container').find('.list-card-position:contains("' + currentId + '")').parents('.list-card-container');
+                            $(cards).fadeOut();
+                        });
+                        
+                    }
+                });
+
+                /*
+
+                $('.window-module.u-gutter').on('change', '.list-filter', function (e) {
+
+                    
+                    e.preventDefault();
+                    var currentId = this.id.replace('filter-', '');
+                    if (currentId == 'all') {
+                        $('.list-card-container').fadeIn();
+                        $('.list-filter').not($(this)).attr('checked', false);
+                        $(this).parent().siblings('.danger').removeClass('danger');
+                        $(this).parent().addClass('danger');
+                    }
+                    else {
+                        $('#filter-all').attr('checked', false);
+                        $('#filter-all').parent().removeClass('danger');
+                        $('.list-filter:checked').each(function() {
+                            $(this).parent().addClass('danger');
+                            currentId = this.id.replace('filter-', '');
+                            cards = $('.list-card-container').find('.list-card-position:contains("' + currentId + '")').parents('.list-card-container').filter(':hidden');
+                            $(cards).fadeIn();
+                        });
+                        $('.list-filter').not(':checked').each(function() {
+                            $(this).parent().removeClass('danger');
+                            currentId = this.id.replace('filter-', '');
+                            cards = $('.list-card-container').find('.list-card-position:contains("' + currentId + '")').parents('.list-card-container');
+                            $(cards).fadeOut();
+                        });
+                    }
+                    
+                });
+
+                */
 
             });
         });
