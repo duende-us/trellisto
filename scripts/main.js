@@ -125,7 +125,43 @@ var createCards = function () {
 
                 // Clear the sort results
                 $('.js-cards-content').html('');
-               
+                
+                var filterListButton = '',
+                filterList       = '';
+                 
+                filterListButton += '<a id="filter-list-menu" class="quiet-button mod-with-image" href="#">';
+                filterListButton +=     '<span class="icon-sm icon-dropdown-menu quiet-button-icon"></span>';
+                filterListButton +=     '<span class="">Filter</span>';
+                filterListButton += '</a>';
+
+                filterList       += '<div id="trellisto-pop-over-filter" class="trellisto-pop-over">';
+                filterList       +=    '<div class="pop-over-header <js-pop-over-head></js-pop-over-head>er">';
+                filterList       +=        '<a class="pop-over-header-back-btn icon-sm icon-back js-back-view" href="#"></a>';
+                filterList       +=        '<span class="pop-over-header-title js-fill-pop-over-title">Filter Cards</span>';    
+                filterList       +=        '<a class="pop-over-header-close-btn icon-sm icon-close js-close-popover" href="#"></a>';
+                filterList       +=    '</div>';
+                filterList       +=    '<div class="trellisto-pop-over-content">';
+                filterList       +=        '<div>';
+                filterList       +=            '<ul class="trellisto-pop-over-list checkable">';
+                filterList       +=                '<label for="filter-all"><input type="checkbox" class="list-filter" id="filter-all" checked>All</label>';
+                filterList       +=            '</ul>';
+                filterList       +=        '</div>';
+                filterList       +=    '</div>';
+                filterList       += '</div>';
+
+                
+                if (!$('.u-gutter').find('#filter-list-menu').length) {
+                    $(filterListButton).appendTo('.js-content > .window-module');
+                    $(filterList).appendTo('.js-content > .window-module');
+
+                    $('#filter-list-menu').click(function () {
+                        $('#trellisto-pop-over-filter').toggleClass('trellisto-shown');
+                    });
+                }
+
+                $('#trellisto-pop-over-filter .trellisto-pop-over-list').html('');
+                $('<label for="filter-all"><input type="checkbox" class="list-filter" id="filter-all" checked>All</label>').appendTo('#trellisto-pop-over-filter .trellisto-pop-over-list')
+
                 // For each unique list name, create a group of cards
                 $.each(uniquelists, function (i, el) {
 
@@ -153,6 +189,9 @@ var createCards = function () {
 
                     // Append the group
                     $(module).appendTo('.js-cards-content ');
+
+                    // Add to filter list
+                    $('<label for="filter-'+el.toLowerCase()+'"><input type="checkbox" class="list-filter" id="filter-'+el.toLowerCase()+'" checked>'+el+'</label>').appendTo('#trellisto-pop-over-filter .trellisto-pop-over-list')
 
                 });
 
@@ -185,7 +224,7 @@ var createCards = function () {
                 
         });  
 
-    });
+    }); // #content .bing
 
 };
 
