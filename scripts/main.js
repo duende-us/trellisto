@@ -202,7 +202,8 @@ var createCards = function () {
                 
                 $(trellistoList).on('change', '.list-filter', function (e) {
                     e.preventDefault();
-                    var currentId = this.id.replace('filter-', '');
+                    var currentId = this.id.replace('filter-', ''),
+                        cardsInList;
                     if (currentId == 'all') {
                         $('.list-card-container').fadeIn();
                         $('.list-filter').not($(this)).attr('checked', false);
@@ -216,52 +217,18 @@ var createCards = function () {
                         $('.list-filter:checked').each(function() {
                             $(this).parent().addClass('trellisto-is-checked');
                             currentId = this.id.replace('filter-', '');
-                            cards = $('.list-card-container').find('.list-card-position:contains("' + currentId + '")').parents('.list-card-container').filter(':hidden');
-                            $(cards).fadeIn();
+                            cardsInList = $('.list-card-container').find('.list-card-position:contains("' + currentId + '")').parents('.list-card-container').filter(':hidden');
+                            $(cardsInList).fadeIn();
                         });
                         $('.list-filter').not(':checked').each(function() {
                             $(this).parent().removeClass('trellisto-is-checked');
                             currentId = this.id.replace('filter-', '');
-                            cards = $('.list-card-container').find('.list-card-position:contains("' + currentId + '")').parents('.list-card-container');
-                            $(cards).fadeOut();
+                            cardsInList = $('.list-card-container').find('.list-card-position:contains("' + currentId + '")').parents('.list-card-container');
+                            $(cardsInList).fadeOut();
                         });
                         
                     }
                 });
-
-                /*
-
-                $('.window-module.u-gutter').on('change', '.list-filter', function (e) {
-
-                    
-                    e.preventDefault();
-                    var currentId = this.id.replace('filter-', '');
-                    if (currentId == 'all') {
-                        $('.list-card-container').fadeIn();
-                        $('.list-filter').not($(this)).attr('checked', false);
-                        $(this).parent().siblings('.danger').removeClass('danger');
-                        $(this).parent().addClass('danger');
-                    }
-                    else {
-                        $('#filter-all').attr('checked', false);
-                        $('#filter-all').parent().removeClass('danger');
-                        $('.list-filter:checked').each(function() {
-                            $(this).parent().addClass('danger');
-                            currentId = this.id.replace('filter-', '');
-                            cards = $('.list-card-container').find('.list-card-position:contains("' + currentId + '")').parents('.list-card-container').filter(':hidden');
-                            $(cards).fadeIn();
-                        });
-                        $('.list-filter').not(':checked').each(function() {
-                            $(this).parent().removeClass('danger');
-                            currentId = this.id.replace('filter-', '');
-                            cards = $('.list-card-container').find('.list-card-position:contains("' + currentId + '")').parents('.list-card-container');
-                            $(cards).fadeOut();
-                        });
-                    }
-                    
-                });
-
-                */
 
             });
         });
