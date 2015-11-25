@@ -108,6 +108,8 @@ var createCards = function () {
                 // Return if this is not the 'Sort by list' item
                 if (!$(this).hasClass('js-sort-by-list')) {
                     isGroupByList = 0
+                    $('#filter-list-menu').remove();
+                    $('#trellisto-pop-over-filter').remove();
                     return;
                 }
                 
