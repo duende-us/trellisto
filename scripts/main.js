@@ -140,7 +140,7 @@ var createCards = function () {
                 filterList       +=    '<div class="pop-over-header <js-pop-over-head></js-pop-over-head>er">';
                 filterList       +=        '<a class="pop-over-header-back-btn icon-sm icon-back js-back-view" href="#"></a>';
                 filterList       +=        '<span class="pop-over-header-title js-fill-pop-over-title">Filter Cards</span>';    
-                filterList       +=        '<a class="pop-over-header-close-btn icon-sm icon-close js-close-popover" href="#"></a>';
+                filterList       +=        '<a class="pop-over-header-close-btn icon-sm icon-close js-trellisto-filter-close" href="#"></a>';
                 filterList       +=    '</div>';
                 filterList       +=    '<div class="trellisto-pop-over-content">';
                 filterList       +=        '<div>';
@@ -156,8 +156,14 @@ var createCards = function () {
                     $(filterListButton).appendTo('.js-content > .window-module');
                     $(filterList).appendTo('.js-content > .window-module');
 
+                    // Show the popover list when Filter is clicked
                     $('#filter-list-menu').click(function () {
                         $('#trellisto-pop-over-filter').toggleClass('trellisto-shown');
+                    });
+
+                    // Hide the popover list when 'x' is clicked
+                    $('.js-trellisto-filter-close').click(function () {
+                        $('#trellisto-pop-over-filter').removeClass('trellisto-shown');
                     });
                 }
 
@@ -226,7 +232,6 @@ var createCards = function () {
                             cardsInList = $('.list-card-container').find('.list-card-position:contains("' + currentId + '")').parents('.list-card-container');
                             $(cardsInList).fadeOut();
                         });
-                        
                     }
                 });
 
