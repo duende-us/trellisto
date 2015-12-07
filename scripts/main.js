@@ -210,6 +210,7 @@ var createCards = function () {
                     e.preventDefault();
                     var currentId = this.id.replace('filter-', ''),
                         cardsInList;
+
                     if (currentId == 'all') {
                         $('.list-card-container').fadeIn();
                         $('.list-filter').not($(this)).attr('checked', false);
@@ -223,13 +224,23 @@ var createCards = function () {
                         $('.list-filter:checked').each(function() {
                             $(this).parent().addClass('trellisto-is-checked');
                             currentId = this.id.replace('filter-', '');
-                            cardsInList = $('.list-card-container').find('.list-card-position:contains("' + currentId + '")').parents('.list-card-container').filter(':hidden');
+                            // Find all cards that contain a matching list label
+                            cardsInList = $('.list-card-container').find('.list-card-position > strong:first-child').filter(function() {
+                               return $(this).text() == currentId;
+                            });
+                            // Find all card parents that are already hidden
+                            cardsInList = cardsInList.parents('.list-card-container').filter(':hidden');
                             $(cardsInList).fadeIn();
                         });
                         $('.list-filter').not(':checked').each(function() {
                             $(this).parent().removeClass('trellisto-is-checked');
                             currentId = this.id.replace('filter-', '');
-                            cardsInList = $('.list-card-container').find('.list-card-position:contains("' + currentId + '")').parents('.list-card-container');
+                            // Find all cards that contain a matching list label
+                            cardsInList = $('.list-card-container').find('.list-card-position > strong:first-child').filter(function() {
+                                return $(this).text() == currentId;
+                            });
+                            // Find all card parents
+                            cardsInList = cardsInList.parents('.list-card-container');
                             $(cardsInList).fadeOut();
                         });
                     }
