@@ -192,7 +192,7 @@ var createCards = function () {
                     $.each(filtered, function (i, obj) {
                         module += '<div class="list-card-container">';
                         module +=   '<div class="js-card">'+obj.jsCard+'</div>';
-                        module +=   '<p class="list-card-position quiet"> in <strong>'+obj.list+'</strong> on <strong>'+obj.board+'</strong></p>';
+                        module +=   '<p class="list-card-position quiet"><strong class="trellisto-in-list">'+obj.list+'</strong> on <strong>'+obj.board+'</strong></p>';
                         module += '</div>';
                     });
 

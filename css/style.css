@@ -10,11 +10,13 @@
 .groupbylist-consumed-total {
 	opacity: 0.5;
 }
-
 .trellisto-pop-over {
 	display: none;
 }
-
 .trellisto-pop-over.trellisto-shown {
 	display: block;
+}
+.trellisto-in-list {
+	position: absolute;
+	visibility: hidden;
 }
