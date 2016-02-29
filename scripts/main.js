@@ -49,6 +49,126 @@ var debounce = function (func, threshold, execAsap) {
 jQuery.fn[sr] = function (fn) { return fn ? this.on('DOMNodeInserted', debounce(fn)) : this.trigger(sr); };
 })(jQuery, 'debouncedDNI');
 
+// Create the Filter menu
+var makeFilterMenu = function(trellistoList, uniquelists, cards) {
+  
+  var filterListButton = '',
+      filterList       = '';
+
+  filterListButton += '<a id="filter-list-menu" class="quiet-button mod-with-image" href="#">';
+  filterListButton +=     '<span class="icon-sm icon-dropdown-menu quiet-button-icon"></span>';
+  filterListButton +=     '<span class="">Filter</span>';
+  filterListButton += '</a>';
+
+  filterList       += '<div id="trellisto-pop-over-filter" class="trellisto-pop-over">';
+  filterList       +=    '<div class="pop-over-header <js-pop-over-head></js-pop-over-head>er">';
+  filterList       +=        '<a class="pop-over-header-back-btn icon-sm icon-back js-back-view" href="#"></a>';
+  filterList       +=        '<span class="pop-over-header-title js-fill-pop-over-title">Filter Cards</span>';    
+  filterList       +=        '<a class="pop-over-header-close-btn icon-sm icon-close js-trellisto-filter-close" href="#"></a>';
+  filterList       +=    '</div>';
+  filterList       +=    '<div class="trellisto-pop-over-content">';
+  filterList       +=        '<div>';
+  filterList       +=            '<ul class="trellisto-pop-over-list checkable">';
+  filterList       +=                '<label for="filter-all"><input type="checkbox" class="list-filter" id="filter-all" checked>All</label>';
+  filterList       +=            '</ul>';
+  filterList       +=        '</div>';
+  filterList       +=    '</div>';
+  filterList       += '</div>';
+
+
+  if (!$('.u-gutter').find('#filter-list-menu').length) {
+    $(filterListButton).appendTo('.js-content > .window-module');
+    $(filterList).appendTo('.js-content > .window-module');
+
+    // Show the popover list when Filter is clicked
+    $('#filter-list-menu').click(function () {
+        $('#trellisto-pop-over-filter').toggleClass('trellisto-shown');
+    });
+
+    // Hide the popover list when 'x' is clicked
+    $('.js-trellisto-filter-close').click(function () {
+        $('#trellisto-pop-over-filter').removeClass('trellisto-shown');
+    });
+  }
+
+  $(trellistoList).html('');
+  $('<label for="filter-all"><input type="checkbox" class="list-filter" id="filter-all" checked>All</label>').appendTo(trellistoList);
+
+  // For each unique list name, create a group of cards
+  $.each(uniquelists, function (i, el) {
+
+    var scrumTotal    = 0,
+        consumedTotal = 0,
+        className     = el;//.replace(/\s+/g, '').toLowerCase();
+
+    var module = '<div class="window-module"><div class="window-module-title"><span class="window-module-title-icon icon-lg icon-list"></span><h3>'+el+'</h3></div>';
+    
+    module += '<div class="u-gutter float-cards u-clearfix js-list">';
+
+    // Find all cards for this list
+    var filtered = cards.filter(function(obj) {
+        return obj.list == el;
+    });
+
+    // Construct a card for each object
+    $.each(filtered, function (i, obj) {
+        module += '<div class="list-card-container">';
+        module +=   '<div class="js-card">'+obj.jsCard+'</div>';
+        module +=   '<p class="list-card-position quiet"><strong class="trellisto-in-list">'+obj.list+'</strong> on <strong>'+obj.board+'</strong></p>';
+        module += '</div>';
+    });
+
+    module += '</div></div>';
+
+    // Append the group
+    $(module).appendTo('.js-cards-content');
+
+    // Add to filter list
+    $('<label for="filter-'+className+'"><input type="checkbox" class="list-filter" id="filter-'+className+'">'+el+'</label>').appendTo(trellistoList);
+
+  });
+
+  $(trellistoList).on('change', '.list-filter', function (e) {
+    e.preventDefault();
+    var currentId = this.id.replace('filter-', ''),
+        cardsInList;
+
+    if (currentId == 'all') {
+        $('.list-card-container').fadeIn();
+        $('.list-filter').not($(this)).attr('checked', false);
+        $(this).parent().siblings('.trellisto-is-checked').removeClass('trellisto-is-checked');
+        $(this).parent().addClass('trellisto-is-checked');
+    }
+    else {
+        $('#filter-all').attr('checked', false);
+        $('#filter-all').parent().removeClass('trellisto-is-checked');
+        
+        $('.list-filter:checked').each(function() {
+            $(this).parent().addClass('trellisto-is-checked');
+            currentId = this.id.replace('filter-', '');
+            // Find all cards that contain a matching list label
+            cardsInList = $('.list-card-container').find('.list-card-position > strong:first-child').filter(function() {
+               return $(this).text() == currentId;
+            });
+            // Find all card parents that are already hidden
+            cardsInList = cardsInList.parents('.list-card-container').filter(':hidden');
+            $(cardsInList).fadeIn();
+        });
+        $('.list-filter').not(':checked').each(function() {
+            $(this).parent().removeClass('trellisto-is-checked');
+            currentId = this.id.replace('filter-', '');
+            // Find all cards that contain a matching list label
+            cardsInList = $('.list-card-container').find('.list-card-position > strong:first-child').filter(function() {
+                return $(this).text() == currentId;
+            });
+            // Find all card parents
+            cardsInList = cardsInList.parents('.list-card-container');
+            $(cardsInList).fadeOut();
+        });
+    }
+  });
+}; // end - makeFilterMenu
+
 // Create cards object for the 'Sort by list' view
 var createCards = function () {
     var cards;
@@ -60,7 +180,8 @@ var createCards = function () {
             lists = [],
             cardElements = $('.list-card-container'),
             isGroupByList = 0,
-            uniquelists = [];
+            uniquelists = [],
+            trellistoList = '#trellisto-pop-over-filter .trellisto-pop-over-list';
 
         $.each(cardElements, function (i, el) {
             
@@ -87,6 +208,9 @@ var createCards = function () {
         // Sort list names alphabetically
         uniquelists.sort();
 
+        // Add the Filter menu to the DOM
+        makeFilterMenu(trellistoList, uniquelists, cards);
+
         // Pop over list
         $('.pop-over').bind('DOMNodeInserted', function () {
             
@@ -106,145 +230,33 @@ var createCards = function () {
             $('.pop-over-list li > a').click( function() {
 
                 // Return if this is not the 'Sort by list' item
+                /*
                 if (!$(this).hasClass('js-sort-by-list')) {
                     isGroupByList = 0
                     $('#filter-list-menu').remove();
                     $('#trellisto-pop-over-filter').remove();
                     return;
                 }
+                */
+                isGroupByList = $(this).hasClass('js-sort-by-list') ? 1 : 0;
                 
                 // Remember that 'Sort by list' is selected
-                isGroupByList = 1;
+                //isGroupByList = 1;
 
-                // Update 'Sort by []' label
-                $('.js-sort-text').children('strong:first-child').text('list');
-
-                // Hide the popover list
-                $('.pop-over').removeClass('is-shown');
-
-                // Clear the popover list
-                $('.pop-over').find('.pop-over-content').html('');
-
-                // Clear the sort results
-                $('.js-cards-content').html('');
-                
-                var filterListButton = '',
-                filterList       = '';
-                 
-                filterListButton += '<a id="filter-list-menu" class="quiet-button mod-with-image" href="#">';
-                filterListButton +=     '<span class="icon-sm icon-dropdown-menu quiet-button-icon"></span>';
-                filterListButton +=     '<span class="">Filter</span>';
-                filterListButton += '</a>';
-
-                filterList       += '<div id="trellisto-pop-over-filter" class="trellisto-pop-over">';
-                filterList       +=    '<div class="pop-over-header <js-pop-over-head></js-pop-over-head>er">';
-                filterList       +=        '<a class="pop-over-header-back-btn icon-sm icon-back js-back-view" href="#"></a>';
-                filterList       +=        '<span class="pop-over-header-title js-fill-pop-over-title">Filter Cards</span>';    
-                filterList       +=        '<a class="pop-over-header-close-btn icon-sm icon-close js-trellisto-filter-close" href="#"></a>';
-                filterList       +=    '</div>';
-                filterList       +=    '<div class="trellisto-pop-over-content">';
-                filterList       +=        '<div>';
-                filterList       +=            '<ul class="trellisto-pop-over-list checkable">';
-                filterList       +=                '<label for="filter-all"><input type="checkbox" class="list-filter" id="filter-all" checked>All</label>';
-                filterList       +=            '</ul>';
-                filterList       +=        '</div>';
-                filterList       +=    '</div>';
-                filterList       += '</div>';
-
-                
-                if (!$('.u-gutter').find('#filter-list-menu').length) {
-                    $(filterListButton).appendTo('.js-content > .window-module');
-                    $(filterList).appendTo('.js-content > .window-module');
-
-                    // Show the popover list when Filter is clicked
-                    $('#filter-list-menu').click(function () {
-                        $('#trellisto-pop-over-filter').toggleClass('trellisto-shown');
-                    });
-
-                    // Hide the popover list when 'x' is clicked
-                    $('.js-trellisto-filter-close').click(function () {
-                        $('#trellisto-pop-over-filter').removeClass('trellisto-shown');
-                    });
+                // If Sort by List
+                if ($(this).hasClass('js-sort-by-list')) {
+                  // Update 'Sort by []' label
+                  $('.js-sort-text').children('strong:first-child').text('list');
+                  // Hide the popover list
+                  $('.pop-over').removeClass('is-shown');
+                  // Clear the popover list
+                  $('.pop-over').find('.pop-over-content').html('');
+                  // Clear the sort results
+                  $('.js-cards-content').html('');
                 }
-
-                var trellistoList = '#trellisto-pop-over-filter .trellisto-pop-over-list';
-
-                $('#trellisto-pop-over-filter .trellisto-pop-over-list').html('');
-                $('<label for="filter-all"><input type="checkbox" class="list-filter" id="filter-all" checked>All</label>').appendTo(trellistoList);
-
-                // For each unique list name, create a group of cards
-                $.each(uniquelists, function (i, el) {
-
-                    var scrumTotal    = 0,
-                        consumedTotal = 0,
-                        className     = el;//.replace(/\s+/g, '').toLowerCase();
-
-                    var module = '<div class="window-module"><div class="window-module-title"><span class="window-module-title-icon icon-lg icon-list"></span><h3>'+el+'</h3></div>';
-                    
-                    module += '<div class="u-gutter float-cards u-clearfix js-list">';
-
-                    // Find all cards for this list
-                    var filtered = cards.filter(function(obj) {
-                        return obj.list == el;
-                    });
-
-                    // Construct a card for each object
-                    $.each(filtered, function (i, obj) {
-                        module += '<div class="list-card-container">';
-                        module +=   '<div class="js-card">'+obj.jsCard+'</div>';
-                        module +=   '<p class="list-card-position quiet"><strong class="trellisto-in-list">'+obj.list+'</strong> on <strong>'+obj.board+'</strong></p>';
-                        module += '</div>';
-                    });
-
-                    module += '</div></div>';
-
-                    // Append the group
-                    $(module).appendTo('.js-cards-content');
-
-                    // Add to filter list
-                    $('<label for="filter-'+className+'"><input type="checkbox" class="list-filter" id="filter-'+className+'">'+el+'</label>').appendTo(trellistoList);
-
-                });
                 
-                $(trellistoList).on('change', '.list-filter', function (e) {
-                    e.preventDefault();
-                    var currentId = this.id.replace('filter-', ''),
-                        cardsInList;
-
-                    if (currentId == 'all') {
-                        $('.list-card-container').fadeIn();
-                        $('.list-filter').not($(this)).attr('checked', false);
-                        $(this).parent().siblings('.trellisto-is-checked').removeClass('trellisto-is-checked');
-                        $(this).parent().addClass('trellisto-is-checked');
-                    }
-                    else {
-                        $('#filter-all').attr('checked', false);
-                        $('#filter-all').parent().removeClass('trellisto-is-checked');
-                        
-                        $('.list-filter:checked').each(function() {
-                            $(this).parent().addClass('trellisto-is-checked');
-                            currentId = this.id.replace('filter-', '');
-                            // Find all cards that contain a matching list label
-                            cardsInList = $('.list-card-container').find('.list-card-position > strong:first-child').filter(function() {
-                               return $(this).text() == currentId;
-                            });
-                            // Find all card parents that are already hidden
-                            cardsInList = cardsInList.parents('.list-card-container').filter(':hidden');
-                            $(cardsInList).fadeIn();
-                        });
-                        $('.list-filter').not(':checked').each(function() {
-                            $(this).parent().removeClass('trellisto-is-checked');
-                            currentId = this.id.replace('filter-', '');
-                            // Find all cards that contain a matching list label
-                            cardsInList = $('.list-card-container').find('.list-card-position > strong:first-child').filter(function() {
-                                return $(this).text() == currentId;
-                            });
-                            // Find all card parents
-                            cardsInList = cardsInList.parents('.list-card-container');
-                            $(cardsInList).fadeOut();
-                        });
-                    }
-                });
+                // Add the Filter menu to the DOM
+                makeFilterMenu(trellistoList, uniquelists, cards);
 
             });
         });
