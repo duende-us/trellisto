@@ -152,6 +152,7 @@ var makeFilterMenu = function(trellistoList, uniquelists, cards) {
             });
             // Find all card parents that are already hidden
             cardsInList = cardsInList.parents('.list-card-container').filter(':hidden');
+            $(cardsInList).removeClass('hidden');
             $(cardsInList).fadeIn();
         });
         $('.list-filter').not(':checked').each(function() {
@@ -163,11 +164,40 @@ var makeFilterMenu = function(trellistoList, uniquelists, cards) {
             });
             // Find all card parents
             cardsInList = cardsInList.parents('.list-card-container');
+            $(cardsInList).addClass('hidden');
             $(cardsInList).fadeOut();
         });
     }
+
+    calculateScrum();
+
   });
 }; // end - makeFilterMenu
+
+// Create the Filter menu
+var calculateScrum = function() {
+
+  var group = $('.js-cards-content .window-module');
+
+  $('.groupbylist-consumed-total, .groupbylist-scrum-total').remove();
+
+  // Calculate and add total scrum/consumed points to each card group
+  $.each(group, function (i, grp) {
+    var scrumTotal  = 0,
+      consumedTotal = 0,
+      cards         = $(grp).find('.list-card-container'),
+      groupTitle    = $(grp).find('.window-module-title');
+
+      $.each(cards, function (i, card) {
+        if(!$(card).hasClass('hidden')) {
+          scrumTotal    += parseFloat(getCardScrum(card));
+          consumedTotal += parseFloat(getCardConsumed(card));
+        }
+      });
+
+      $('<span class="groupbylist-consumed-total">'+consumedTotal+'</span><span class="groupbylist-scrum-total">'+scrumTotal+'</span>').appendTo(groupTitle);
+  });  
+}      
 
 // Create cards object for the 'Sort by list' view
 var createCards = function () {
@@ -211,6 +241,9 @@ var createCards = function () {
         // Add the Filter menu to the DOM
         makeFilterMenu(trellistoList, uniquelists, cards);
 
+        // Calculate the scrum
+        calculateScrum(); 
+
         // Pop over list
         $('.pop-over').bind('DOMNodeInserted', function () {
             
@@ -229,19 +262,7 @@ var createCards = function () {
             // Pop over list items
             $('.pop-over-list li > a').click( function() {
 
-                // Return if this is not the 'Sort by list' item
-                /*
-                if (!$(this).hasClass('js-sort-by-list')) {
-                    isGroupByList = 0
-                    $('#filter-list-menu').remove();
-                    $('#trellisto-pop-over-filter').remove();
-                    return;
-                }
-                */
                 isGroupByList = $(this).hasClass('js-sort-by-list') ? 1 : 0;
-                
-                // Remember that 'Sort by list' is selected
-                //isGroupByList = 1;
 
                 // If Sort by List
                 if ($(this).hasClass('js-sort-by-list')) {
@@ -267,27 +288,11 @@ var createCards = function () {
             // Return if scrum values have been added
             if ($('.js-content').find('[class="groupbylist-scrum-total"]').length) return;
 
-            var group = $('.js-cards-content .window-module');
-
-            // Calculate and add total scrum/consumed points to each card group
-            $.each(group, function (i, grp) {
-                var scrumTotal        = 0,
-                    consumedTotal     = 0,
-                    cards             = $(grp).find('.list-card-container'),
-                    groupTitle        = $(grp).find('.window-module-title');
-
-                    $.each(cards, function (i, card) {
-                        scrumTotal    += parseFloat(getCardScrum(card));
-                        consumedTotal += parseFloat(getCardConsumed(card));
-                    });
-                    
-                    $('<span class="groupbylist-consumed-total">'+consumedTotal+'</span><span class="groupbylist-scrum-total">'+scrumTotal+'</span>').appendTo(groupTitle);
-                    
-            });                
+            calculateScrum(); // Calculate the scrum
                 
         });  
 
-    }); // #content .bing
+    }); // #content .bind
 
 };
 
@@ -295,7 +300,6 @@ var ran = 0;
 var href = window.location.href;
 if (href.substr(href.lastIndexOf('/') + 1) == 'cards') {
     createCards();
-
     ran = 1;
 }
 setInterval(function () {
