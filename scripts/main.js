@@ -49,6 +49,44 @@ var debounce = function (func, threshold, execAsap) {
 jQuery.fn[sr] = function (fn) { return fn ? this.on('DOMNodeInserted', debounce(fn)) : this.trigger(sr); };
 })(jQuery, 'debouncedDNI');
 
+// Makes a group of cards for each unique
+// list name and appends them to the DOM
+var appendCardGroup = function(trellistoList, uniquelists, cards ) {
+  
+  $.each(uniquelists, function (i, el) {
+
+    var scrumTotal    = 0,
+        consumedTotal = 0,
+        className     = el;//.replace(/\s+/g, '').toLowerCase();
+
+    var module = '<div class="window-module"><div class="window-module-title"><span class="window-module-title-icon icon-lg icon-list"></span><h3>'+el+'</h3></div>';
+    
+    module += '<div class="u-gutter float-cards u-clearfix js-list">';
+
+    // Find all cards for this list
+    var filtered = cards.filter(function(obj) {
+        return obj.list == el;
+    });
+
+    // Construct a card for each object
+    $.each(filtered, function (i, obj) {
+        module += '<div class="list-card-container">';
+        module +=   '<div class="js-card">'+obj.jsCard+'</div>';
+        module +=   '<p class="list-card-position quiet"><strong class="trellisto-in-list">'+obj.list+'</strong> on <strong>'+obj.board+'</strong></p>';
+        module += '</div>';
+    });
+
+    module += '</div></div>';
+
+    // Append the group
+    $(module).appendTo('.js-cards-content');
+
+    // Add to filter list
+    $('<label for="filter-'+className+'"><input type="checkbox" class="list-filter" id="filter-'+className+'">'+el+'</label>').appendTo(trellistoList);
+
+  });
+}
+
 // Create the Filter menu
 var makeFilterMenu = function(trellistoList, uniquelists, cards) {
   
@@ -94,79 +132,45 @@ var makeFilterMenu = function(trellistoList, uniquelists, cards) {
   $(trellistoList).html('');
   $('<label for="filter-all"><input type="checkbox" class="list-filter" id="filter-all" checked>All</label>').appendTo(trellistoList);
 
-  // For each unique list name, create a group of cards
-  $.each(uniquelists, function (i, el) {
-
-    var scrumTotal    = 0,
-        consumedTotal = 0,
-        className     = el;//.replace(/\s+/g, '').toLowerCase();
-
-    var module = '<div class="window-module"><div class="window-module-title"><span class="window-module-title-icon icon-lg icon-list"></span><h3>'+el+'</h3></div>';
-    
-    module += '<div class="u-gutter float-cards u-clearfix js-list">';
-
-    // Find all cards for this list
-    var filtered = cards.filter(function(obj) {
-        return obj.list == el;
-    });
-
-    // Construct a card for each object
-    $.each(filtered, function (i, obj) {
-        module += '<div class="list-card-container">';
-        module +=   '<div class="js-card">'+obj.jsCard+'</div>';
-        module +=   '<p class="list-card-position quiet"><strong class="trellisto-in-list">'+obj.list+'</strong> on <strong>'+obj.board+'</strong></p>';
-        module += '</div>';
-    });
-
-    module += '</div></div>';
-
-    // Append the group
-    $(module).appendTo('.js-cards-content');
-
-    // Add to filter list
-    $('<label for="filter-'+className+'"><input type="checkbox" class="list-filter" id="filter-'+className+'">'+el+'</label>').appendTo(trellistoList);
-
-  });
-
   $(trellistoList).on('change', '.list-filter', function (e) {
     e.preventDefault();
     var currentId = this.id.replace('filter-', ''),
         cardsInList;
 
     if (currentId == 'all') {
-        $('.list-card-container').fadeIn();
-        $('.list-filter').not($(this)).attr('checked', false);
-        $(this).parent().siblings('.trellisto-is-checked').removeClass('trellisto-is-checked');
-        $(this).parent().addClass('trellisto-is-checked');
+      $('.list-card-container').fadeIn();
+      $('.list-filter').not($(this)).attr('checked', false);
+      $(this).parent().siblings('.trellisto-is-checked').removeClass('trellisto-is-checked');
+      $(this).parent().addClass('trellisto-is-checked');
     }
     else {
-        $('#filter-all').attr('checked', false);
-        $('#filter-all').parent().removeClass('trellisto-is-checked');
-        
-        $('.list-filter:checked').each(function() {
-            $(this).parent().addClass('trellisto-is-checked');
-            currentId = this.id.replace('filter-', '');
-            // Find all cards that contain a matching list label
-            cardsInList = $('.list-card-container').find('.list-card-position > strong:first-child').filter(function() {
-               return $(this).text() == currentId;
-            });
-            // Find all card parents that are already hidden
-            cardsInList = cardsInList.parents('.list-card-container').filter(':hidden');
-            $(cardsInList).removeClass('hidden');
-            $(cardsInList).fadeIn();
+      $('#filter-all').attr('checked', false);
+      $('#filter-all').parent().removeClass('trellisto-is-checked');
+      
+      $('.list-filter:checked').each(function() {
+        $(this).parent().addClass('trellisto-is-checked');
+        currentId = this.id.replace('filter-', '');
+        // Find all cards that contain a matching list label
+        cardsInList = $('.list-card-container').find('.list-card-position > strong:first-child').filter(function() {
+           return $(this).text() == currentId;
         });
-        $('.list-filter').not(':checked').each(function() {
-            $(this).parent().removeClass('trellisto-is-checked');
-            currentId = this.id.replace('filter-', '');
-            // Find all cards that contain a matching list label
-            cardsInList = $('.list-card-container').find('.list-card-position > strong:first-child').filter(function() {
-                return $(this).text() == currentId;
-            });
-            // Find all card parents
-            cardsInList = cardsInList.parents('.list-card-container');
-            $(cardsInList).addClass('hidden');
-            $(cardsInList).fadeOut();
+        // Find all card parents that are already hidden
+        cardsInList = cardsInList.parents('.list-card-container').filter(':hidden');
+        $(cardsInList).removeClass('hidden');
+        $(cardsInList).fadeIn();
+      });
+      $('.list-filter').not(':checked').each(function() {
+        $(this).parent().removeClass('trellisto-is-checked');
+        currentId = this.id.replace('filter-', '');
+        // Find all cards that contain a matching list label
+        cardsInList = $('.list-card-container').find('.list-card-position > strong:first-child').filter(function() {
+            return $(this).text() == currentId;
         });
+        // Find all card parents
+        cardsInList = cardsInList.parents('.list-card-container');
+        $(cardsInList).addClass('hidden');
+        $(cardsInList).fadeOut();
+      });
     }
 
     calculateScrum();
@@ -199,100 +203,105 @@ var calculateScrum = function() {
   });  
 }      
 
-// Create cards object for the 'Sort by list' view
+// Create cards object function() {}or the 'Sort by list' view
 var createCards = function () {
-    var cards;
-    $('#content').bind('DOMNodeInserted', function () {
+  var cards;
+  $('#content').bind('DOMNodeInserted', function () {
+      
+    $('#content').unbind('DOMNodeInserted');
+
+    var cards = [],
+        lists = [],
+        cardElements = $('.list-card-container'),
+        isGroupByList = 0,
+        uniquelists = [],
+        trellistoList = '#trellisto-pop-over-filter .trellisto-pop-over-list';
+
+    $.each(cardElements, function (i, el) {
         
-        $('#content').unbind('DOMNodeInserted');
+      var jsCard   = $(el).find('.js-card').html(),
+          scrum    = getCardScrum(el),
+          consumed = getCardConsumed(el),
+          list     = $(el).find('.list-card-position').children('strong:first-child').text(),
+          board    = $(el).parents('.window-module').find('.window-module-title h3 a').text();
 
-        var cards = [],
-            lists = [],
-            cardElements = $('.list-card-container'),
-            isGroupByList = 0,
-            uniquelists = [],
-            trellistoList = '#trellisto-pop-over-filter .trellisto-pop-over-list';
+      lists.push(list);
+      
+      cards.push({ jsCard   : jsCard,
+                   scrum    : scrum,
+                   consumed : consumed,
+                   list     : list,
+                   board    : board });
+    });
+    
+    // Find unique list names
+    $.each(lists, function (i, el) {
+        if ($.inArray(el, uniquelists) === -1) uniquelists.push(el);
+    });
 
-        $.each(cardElements, function (i, el) {
-            
-            var jsCard   = $(el).find('.js-card').html(),
-                scrum    = getCardScrum(el),
-                consumed = getCardConsumed(el),
-                list     = $(el).find('.list-card-position').children('strong:first-child').text(),
-                board    = $(el).parents('.window-module').find('.window-module-title h3 a').text();
+    // Sort list names alphabetically
+    uniquelists.sort();
 
-            lists.push(list);
-            
-            cards.push({ jsCard   : jsCard,
-                         scrum    : scrum,
-                         consumed : consumed,
-                         list     : list,
-                         board    : board });
-        });
+    // Add the Filter menu to the DOM
+    makeFilterMenu(trellistoList, uniquelists, cards);
+
+    // Calculate the scrum
+    calculateScrum(); 
+
+    // Pop over list
+    $('.pop-over').bind('DOMNodeInserted', function () {
         
-        // Find unique list names
-        $.each(lists, function (i, el) {
-            if ($.inArray(el, uniquelists) === -1) uniquelists.push(el);
-        });
+      // Return if 'Sort by list' item exists
+      if ($('.pop-over').find('.js-sort-by-list').length) return;
+      
+      // Append 'Sort by list' item
+      $('<li><a class="highlight-icon js-sort-by-list" href="#">Sort by list <span class="icon-sm icon-check"></span></a></li>').appendTo('.pop-over-list');
 
-        // Sort list names alphabetically
-        uniquelists.sort();
+      // If grouping by list, then add add check icon to 'Sort by list' item
+      if (isGroupByList) {
+        $('.pop-over-list li').removeClass('active');
+        $('.js-sort-by-list').parent().addClass('active');
+      }
+      
+      // Pop over list items
+      $('.pop-over-list li > a').click( function() {
 
+        isGroupByList = $(this).hasClass('js-sort-by-list') ? 1 : 0;
+
+        // If Sort by List
+        if ($(this).hasClass('js-sort-by-list')) {
+          // Update 'Sort by []' label
+          $('.js-sort-text').children('strong:first-child').text('list');
+          // Hide the popover list
+          $('.pop-over').removeClass('is-shown');
+          // Clear the popover list
+          $('.pop-over').find('.pop-over-content').html('');
+          // Clear the sort results
+          $('.js-cards-content').html('');
+        }
+        
         // Add the Filter menu to the DOM
         makeFilterMenu(trellistoList, uniquelists, cards);
 
-        // Calculate the scrum
-        calculateScrum(); 
+        // If Group By List, then append list card group to the DOM
+        if (isGroupByList) {
+          appendCardGroup(trellistoList, uniquelists, cards);
+        }
 
-        // Pop over list
-        $('.pop-over').bind('DOMNodeInserted', function () {
+      });
+    });
+    
+    // Cards have been inserted
+    $('.js-content').debouncedDNI(function () {
+
+      // Return if scrum values have been added
+      if ($('.js-content').find('[class="groupbylist-scrum-total"]').length) return;
+
+      calculateScrum(); // Calculate the scrum
             
-            // Return if 'Sort by list' item exists
-            if ($('.pop-over').find('.js-sort-by-list').length) return;
-            
-            // Append 'Sort by list' item
-            $('<li><a class="highlight-icon js-sort-by-list" href="#">Sort by list <span class="icon-sm icon-check"></span></a></li>').appendTo('.pop-over-list');
+    });  
 
-            // If grouping by list, then add add check icon to 'Sort by list' item
-            if (isGroupByList) {
-                $('.pop-over-list li').removeClass('active');
-                $('.js-sort-by-list').parent().addClass('active');
-            }
-            
-            // Pop over list items
-            $('.pop-over-list li > a').click( function() {
-
-                isGroupByList = $(this).hasClass('js-sort-by-list') ? 1 : 0;
-
-                // If Sort by List
-                if ($(this).hasClass('js-sort-by-list')) {
-                  // Update 'Sort by []' label
-                  $('.js-sort-text').children('strong:first-child').text('list');
-                  // Hide the popover list
-                  $('.pop-over').removeClass('is-shown');
-                  // Clear the popover list
-                  $('.pop-over').find('.pop-over-content').html('');
-                  // Clear the sort results
-                  $('.js-cards-content').html('');
-                }
-                
-                // Add the Filter menu to the DOM
-                makeFilterMenu(trellistoList, uniquelists, cards);
-
-            });
-        });
-        
-        // Cards have been inserted
-        $('.js-content').debouncedDNI(function () {
-
-            // Return if scrum values have been added
-            if ($('.js-content').find('[class="groupbylist-scrum-total"]').length) return;
-
-            calculateScrum(); // Calculate the scrum
-                
-        });  
-
-    }); // #content .bind
+  }); // #content .bind
 
 };
 
