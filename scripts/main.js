@@ -56,8 +56,7 @@ var appendCardGroup = function(trellistoList, uniquelists, cards ) {
   $.each(uniquelists, function (i, el) {
 
     var scrumTotal    = 0,
-        consumedTotal = 0,
-        className     = el;//.replace(/\s+/g, '').toLowerCase();
+        consumedTotal = 0;
 
     var module = '<div class="window-module"><div class="window-module-title"><span class="window-module-title-icon icon-lg icon-list"></span><h3>'+el+'</h3></div>';
     
@@ -81,9 +80,14 @@ var appendCardGroup = function(trellistoList, uniquelists, cards ) {
     // Append the group
     $(module).appendTo('.js-cards-content');
 
+  });
+}
+
+var appendFilterList = function(trellistoList, uniquelists ) {
+  $.each(uniquelists, function (i, el) {
+    var className = el;//.replace(/\s+/g, '').toLowerCase();
     // Add to filter list
     $('<label for="filter-'+className+'"><input type="checkbox" class="list-filter" id="filter-'+className+'">'+el+'</label>').appendTo(trellistoList);
-
   });
 }
 
@@ -245,8 +249,11 @@ var createCards = function () {
     // Add the Filter menu to the DOM
     makeFilterMenu(trellistoList, uniquelists, cards);
 
+    // Add items to the filter list
+    appendFilterList(trellistoList, uniquelists);
+
     // Calculate the scrum
-    calculateScrum(); 
+    calculateScrum();
 
     // Pop over list
     $('.pop-over').bind('DOMNodeInserted', function () {
@@ -287,6 +294,9 @@ var createCards = function () {
         if (isGroupByList) {
           appendCardGroup(trellistoList, uniquelists, cards);
         }
+        
+        // Add items to the filter list
+        appendFilterList(trellistoList, uniquelists);
 
       });
     });
