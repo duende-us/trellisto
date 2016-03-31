@@ -185,11 +185,16 @@
       $(trellistoList).on('change', '.list-filter', function (e) {
         e.preventDefault();
         var currentId = this.id.replace('filter-', ''),
-            cardsInList,
-            cardGroup,
             visibleCards;
 
         if (currentId == 'all') {
+          // Show all hidden groups
+          $('.window-module').has(thisTrellisto.cardClass).each(function() {
+            if ($(this).is(':hidden')) {
+              $(this).fadeIn();
+            }
+          });
+          // Show all cards
           $(thisTrellisto.cardClass).fadeIn();
           $('.list-filter').not($(this)).attr('checked', false);
           $(this).parent().siblings('.trellisto-is-checked').removeClass('trellisto-is-checked');
@@ -203,63 +208,43 @@
             $(this).parent().addClass('trellisto-is-checked');
             currentId = this.id.replace('filter-', '');
             // Find all cards that contain a matching list label
-            cardsInList = $(thisTrellisto.cardClass).find('.list-card-position > strong:first-child').filter(function() {
+            var cardsInList = $(thisTrellisto.cardClass).find('.list-card-position > strong:first-child').filter(function() {
                return $(this).text() == currentId;
             });
-            // Find the parent card group
-            cardGroup = cardsInList.parents('.window-module');
 
             // Find all card parents that are already trellisto-hidden
             cardsInList = cardsInList.parents(thisTrellisto.cardClass).filter(':hidden');
             $(cardsInList).removeClass('trellisto-hidden');
 
-            // Filter hidden cards from the group
-            visibleCards = cardGroup.find(thisTrellisto.cardClass).not('.trellisto-hidden');
-
-            // If there are visible cards, fade in the group and cards
-            if (visibleCards.length) {
-              cardGroup.removeClass('trellisto-hidden');
-              var fadeElements = cardGroup.add(cardsInList)
-              fadeElements.fadeIn();
-            } else {
-              // ...else, only fade in the cards
-              $(cardsInList).fadeIn();
-            }
-
-           // $(cardsInList).fadeIn();
+            $(cardsInList).fadeIn();
           });
+
           $('.list-filter').not(':checked').each(function() {
             $(this).parent().removeClass('trellisto-is-checked');
             currentId = this.id.replace('filter-', '');
             // Find all cards that contain a matching list label
-            cardsInList = $(thisTrellisto.cardClass).find('.list-card-position > strong:first-child').filter(function() {
+            var cardsInList = $(thisTrellisto.cardClass).find('.list-card-position > strong:first-child').filter(function() {
                 return $(this).text() == currentId;
             });
             
-            // Find the parent card group
-            cardGroup = cardsInList.parents('.window-module');
-
             // Find all cards by class name
             cardsInList = cardsInList.parents(thisTrellisto.cardClass);
-
-            visibleCards = cardGroup.find(thisTrellisto.cardClass).not('.trellisto-hidden');
 
             // Add trellisto-hidden class to cards
             $(cardsInList).addClass('trellisto-hidden');
 
-            // If there are no visible cards, fade out the group and cards
-            if (!visibleCards.length) {
-              cardGroup.addClass('trellisto-hidden');
-              var fadeElements = cardGroup.add(cardsInList)
-              fadeElements.fadeOut();
-            } else {
-              // ...else, only fade out the cards
-              $(cardsInList).fadeOut();
-            }
-
-            
-
+            $(cardsInList).fadeOut();
           });
+          
+          $('.window-module').has(thisTrellisto.cardClass).each(function() {
+            var visibleChildren = $(this).find(thisTrellisto.cardClass+':not(.trellisto-hidden)');
+            if (!visibleChildren.length && $(this).not(':hidden')) {
+              $(this).fadeOut();
+            } else if ($(this).is(':hidden')) {
+              $(this).fadeIn();
+            }
+          });
+                    
         }
 
         thisTrellisto.calculateScrum();
@@ -267,7 +252,7 @@
       });
     }; // end - makeFilterMenu
 
-    // Create cards object for the 'Sort by list' view
+    // Create cards object for the 'Sort by list name' view
     this.createCards = function () {
       var cards;
       $('#content').bind('DOMNodeInserted', function () {
@@ -318,13 +303,13 @@
         // Pop over list
         $('.pop-over').bind('DOMNodeInserted', function () {
             
-          // Return if 'Sort by list' item exists
+          // Return if 'Sort by list name' item exists
           if ($('.pop-over').find('.js-sort-by-list').length) return;
           
-          // Append 'Sort by list' item
-          $('<li><a class="highlight-icon js-sort-by-list" href="#">Sort by list <span class="icon-sm icon-check"></span></a></li>').appendTo('.pop-over-list');
+          // Append 'Sort by list name' item
+          $('<li><a class="highlight-icon js-sort-by-list" href="#">Sort by list name <span class="icon-sm icon-check"></span></a></li>').appendTo('.pop-over-list');
 
-          // If grouping by list, then add add check icon to 'Sort by list' item
+          // If grouping by list, then add add check icon to 'Sort by list name' item
           if (isGroupByList) {
             $('.pop-over-list li').removeClass('active');
             $('.js-sort-by-list').parent().addClass('active');
@@ -335,10 +320,10 @@
 
             isGroupByList = $(this).hasClass('js-sort-by-list') ? 1 : 0;
 
-            // If Sort by List
+            // If Sort by list name
             if ($(this).hasClass('js-sort-by-list')) {
               // Update 'Sort by []' label
-              $('.js-sort-text').children('strong:first-child').text('list');
+              $('.js-sort-text').children('strong:first-child').text('list name');
               // Hide the popover list
               $('.pop-over').removeClass('is-shown');
               // Clear the popover list
