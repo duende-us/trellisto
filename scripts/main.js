@@ -8,6 +8,9 @@
   Description : Loads data from a Google spreadsheet and displays
                 a dashboard UI for experiment iteration
 
+  License     : MIT
+  License URI : ../LICENSE.md
+
 ---------------------------------------------------------------------------------------------------*/
 
 "use strict"
