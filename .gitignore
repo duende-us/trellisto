@@ -7,3 +7,8 @@
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Build Files
+
+node_modules
+.sass-cache

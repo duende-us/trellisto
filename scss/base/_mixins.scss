@@ -1,0 +1,21 @@
+/*
+ * Mixins
+ */
+
+/*
+ * Border Radius  
+ */
+@mixin trellisto-border-radius($radius: $border-radius-sm) {
+     -moz-border-radius : $radius !important;
+  -webkit-border-radius : $radius !important;
+          border-radius : $radius !important;
+}
+
+/*
+ * Box Shadow
+ */
+@mixin trellisto-box-shadow($shadow: 0 3px 0 rgba(0, 0, 0, 0.1)) {
+     -moz-box-shadow : $shadow;
+  -webkit-box-shadow : $shadow;
+          box-shadow : $shadow;
+}

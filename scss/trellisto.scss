@@ -1,0 +1,100 @@
+/*
+
+INSTALL
+run "npm install" within ../ directory
+
+TASKS
+
+grunt watch            : Compile and watch scss & js directories
+
+grunt build-production : Concatenate and minify files for production release
+
+*/
+
+/* Base */
+@import "base/mixins";
+
+/* List Scrum Total */
+.groupbylist-scrum-total,
+.groupbylist-consumed-total {
+	display: inline-block;
+	padding-left: 1em;
+	color: rgb(0, 101, 128);
+    font-size: 16px;
+    font-weight: bold;
+}
+.groupbylist-consumed-total {
+	opacity: 0.5;
+}
+.trellisto-pop-over {
+	display: none;
+  &.trellisto-shown {
+    display: block;
+    background: #fff;
+    border: 1px solid #D6DADC;
+    border-bottom-color: #C4C9CC;
+    @include trellisto-border-radius(3px);
+    @include trellisto-box-shadow(0 1px 6px rgba(0,0,0,.15));
+  }
+}
+.trellisto-pop-over-list {
+  margin: 0 10px;
+}
+.trellisto-in-list {
+	position: absolute;
+	visibility: hidden;
+}
+.trellisto-settings {
+  margin: 2px 0;
+}
+.trellisto-settings__label {
+  position: relative;
+  padding: 6px 8px 6px 28px;
+  color: #8C8C8C;
+  &__icon {
+    left: 7px;
+    position: absolute;
+    top: 6px;
+  }
+}
+.trellisto-settings__button,
+.trellisto-settings__text-button {
+  background: none;
+  box-shadow: none;
+  letter-spacing: 0.02em;
+  padding: 7px 10px;
+  margin: 0;
+  color: #8C8C8C;
+  &:hover {
+    color: #4D4D4D;
+  }
+}
+.trellisto-settings__button {
+  background-color: #D6DADC;
+  font-weight: 600;
+}
+.trellisto-settings__text-button {
+  background-color: transparent;
+  border: none;
+  font-weight: 400;
+  text-decoration: underline;
+  &:hover,
+  &:focus {
+    background: none;
+    background-color: transparent;
+  }
+  &[disabled],
+  &[disabled]:hover {
+    color: #8C8C8C;
+    text-decoration: none;
+  }
+  &--saved[disabled] .icon-check {
+    color: #61BD4F;
+  }
+}
+.trellisto-settings__label a {
+  color: #8C8C8C;
+}
+.trellisto-settings__vert-bar {
+  color: #D6DADC;
+}
