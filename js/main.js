@@ -510,12 +510,12 @@
           filterList       = '';
 
       filterListButton += '<a id="filter-list-menu" class="quiet-button mod-with-image" href="#">';
-      filterListButton +=     '<span class="icon-sm icon-dropdown-menu quiet-button-icon"></span>';
+      filterListButton +=     '<span class="icon-sm icon-overflow-menu-horizontal quiet-button-icon"></span>';
       filterListButton +=     '<span class="">Filter</span>';
       filterListButton += '</a>';
 
       filterList       += '<div id="trellisto-pop-over-filter" class="trellisto-pop-over">';
-      filterList       +=    '<div class="pop-over-header <js-pop-over-head></js-pop-over-head>er">';
+      filterList       +=    '<div class="pop-over-header js-pop-over-header">';
       filterList       +=        '<a class="pop-over-header-back-btn icon-sm icon-back js-back-view" href="#"></a>';
       filterList       +=        '<span class="pop-over-header-title js-fill-pop-over-title">Filter Cards</span>';    
       filterList       +=        '<a class="pop-over-header-close-btn icon-sm icon-close js-trellisto-filter-close" href="#"></a>';
