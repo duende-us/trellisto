@@ -23,7 +23,7 @@
     // use as a reference within the methods
     var thisTrellisto = this;
 
-    this.version             = '1.1.0';
+    this.version             = '1.1.1';
     this.cardClassName       = 'card-grid-container';
     this.cardHiddenClassName = 'trellisto-hidden';
     this.cardClass           = '.'+this.cardClassName;
@@ -35,11 +35,14 @@
                                    }
                                  }
                                };
-    this.trellistoList        = '#trellisto-pop-over-filter .trellisto-pop-over-list';
-    this.cards                = [];
-    this.sortByBoardContent   = '';
-    this.sortByDueDateContent = '';
-    this.boards               = [];
+
+    this.trellistoList           = '#trellisto-pop-over-filter .trellisto-pop-over-list';
+    this.cards                   = [];
+    this.sortByBoardContent      = '';
+    this.sortByDueDateContent    = '';
+    this.boards                  = [];
+    this.favoriteSettingsExist   = false;
+    this.resetSettingsButtonHTML = '<button id="trellisto-reset-settings" class="trellisto-settings__button">Use Favorite</button>';
 
     // Create cards object
     this.trellistoInit = function () {
@@ -91,11 +94,9 @@
           }
 
           // Format the list name
-
           list = thisTrellisto.formatName(listLabel);
 
           // Add only unique list names to the object
-          //if (uniqueListsArray.indexOf(list) === -1) uniqueListsArray.push(list);
           if (!(list in uniqueListObj)) {
             uniqueListObj[list] = listLabel;
             uniqueListKeys.push(list);
@@ -124,6 +125,14 @@
           uniqueListObjSorted[k] = uniqueListObj[k];
         }
 
+        chrome.storage.sync.get(['defaultSortBy', 'defaultFilter'], function (result) {
+          if(result.defaultSortBy) {
+            return true;
+          }
+          else {
+            return false;
+          }
+        });
 
         // Pop over list
         $('.pop-over').bind('DOMNodeInserted', function () {
@@ -188,77 +197,84 @@
         });
         */
 
-        // If local storage for current settings exists,
-        // then update thisTrellisto.currentSettings with
-        // the stored settings, 
-        // otherwise set and save the current settings
+        // Grab any current settings from local storage
         chrome.storage.sync.get(['currentSortBy', 'currentFilter'], function (result) {
-          if (result.currentSortBy) {
-            thisTrellisto.currentSettings.sortBy = result.currentSortBy;
-            thisTrellisto.currentSettings.filterListSettings = result.currentFilter;
+          // Grab any favorite settings from local storage
+          chrome.storage.sync.get(['defaultSortBy', 'defaultFilter'], function (result) {
+            // Check if favorite settings exist
+            thisTrellisto.favoriteSettingsExist = result.defaultSortBy ? true : false;
+          
+            // If local storage for current settings exists,
+            // then update thisTrellisto.currentSettings with
+            // the stored settings, 
+            // otherwise set and save the current settings
+            if (result.currentSortBy) {
+              thisTrellisto.currentSettings.sortBy = result.currentSortBy;
+              thisTrellisto.currentSettings.filterListSettings = result.currentFilter;
 
-            // Delete any old filter settings that no longer exist
-            /*
-            $.each(thisTrellisto.currentSettings.filterListSettings, function (k, v) {
-              if (uniqueListsArray.indexOf(v.label) === -1) delete thisTrellisto.currentSettings.filterListSettings[k];
-            });
-            */
+              // Delete any old filter settings that no longer exist
+              /*
+              $.each(thisTrellisto.currentSettings.filterListSettings, function (k, v) {
+                if (uniqueListsArray.indexOf(v.label) === -1) delete thisTrellisto.currentSettings.filterListSettings[k];
+              });
+              */
 
-            // Add any new filter settings
-            $.each(uniqueListObjSorted, function (k, v) {
-              // If list name already saved locally, then skip this iteration...
-              if (thisTrellisto.currentSettings.filterListSettings[k]) return; 
-              // ...otherwise, update the settings and save locally
-              thisTrellisto.currentSettings.filterListSettings[k] = {};
-              thisTrellisto.currentSettings.filterListSettings[k].label = v;
-              thisTrellisto.currentSettings.filterListSettings[k].selected = 0;
-            });
+              // Add any new filter settings
+              $.each(uniqueListObjSorted, function (k, v) {
+                // If list name already saved locally, then skip this iteration...
+                if (thisTrellisto.currentSettings.filterListSettings[k]) return; 
+                // ...otherwise, update the settings and save locally
+                thisTrellisto.currentSettings.filterListSettings[k] = {};
+                thisTrellisto.currentSettings.filterListSettings[k].label = v;
+                thisTrellisto.currentSettings.filterListSettings[k].selected = 0;
+              });
 
-            // Update & Save current settings
-            thisTrellisto.updateCurrentSettings(thisTrellisto.currentSettings.sortBy,
+              // Update & Save current settings
+              thisTrellisto.updateCurrentSettings(thisTrellisto.currentSettings.sortBy,
+                                                  thisTrellisto.currentSettings.filterListSettings);
+              thisTrellisto.saveCurrentSettings(thisTrellisto.currentSettings.sortBy,
                                                 thisTrellisto.currentSettings.filterListSettings);
-            thisTrellisto.saveCurrentSettings(thisTrellisto.currentSettings.sortBy,
-                                              thisTrellisto.currentSettings.filterListSettings);
-          }
-          else {
-            console.log('No storage');
+            }
+            else {
+              console.log('No storage');
 
-            // Store the list labels in an object with
-            // a formatted listName as the key
-            $.each(uniqueListObjSorted, function (k, v) {
-              thisTrellisto.currentSettings.filterListSettings[k] = {};
-              thisTrellisto.currentSettings.filterListSettings[k].label = v;
-              thisTrellisto.currentSettings.filterListSettings[k].selected = 1;
-            });
-            thisTrellisto.updateCurrentSettings(thisTrellisto.currentSettings.sortBy,
+              // Store the list labels in an object with
+              // a formatted listName as the key
+              $.each(uniqueListObjSorted, function (k, v) {
+                thisTrellisto.currentSettings.filterListSettings[k] = {};
+                thisTrellisto.currentSettings.filterListSettings[k].label = v;
+                thisTrellisto.currentSettings.filterListSettings[k].selected = 1;
+              });
+              thisTrellisto.updateCurrentSettings(thisTrellisto.currentSettings.sortBy,
+                                                  thisTrellisto.currentSettings.filterListSettings);
+              thisTrellisto.saveCurrentSettings(thisTrellisto.currentSettings.sortBy,
                                                 thisTrellisto.currentSettings.filterListSettings);
-            thisTrellisto.saveCurrentSettings(thisTrellisto.currentSettings.sortBy,
-                                              thisTrellisto.currentSettings.filterListSettings);
-          }
+            }
 
-          thisTrellisto.makeFilterMenu();
-          thisTrellisto.refreshGroups(thisTrellisto.currentSettings.sortBy, thisTrellisto.currentSettings.filterListSettings);
-          //thisTrellisto.calculateScrum();
+            thisTrellisto.makeFilterMenu();
+            thisTrellisto.refreshGroups(thisTrellisto.currentSettings.sortBy, thisTrellisto.currentSettings.filterListSettings);
+            //thisTrellisto.calculateScrum();
 
-          // Cards have been inserted
-          $('.js-content').debouncedDNI(function () {
+            // Cards have been inserted
+            $('.js-content').debouncedDNI(function () {
 
-            // Return if scrum values have been added
-            // This terminates redundant function calls
-            if ($('.js-content').find('[class="groupbylist-scrum-total"]').length) return;
+              // Return if scrum values have been added
+              // This terminates redundant function calls
+              if ($('.js-content').find('[class="groupbylist-scrum-total"]').length) return;
 
-            console.log('popover DOMNodeInserted');
+              console.log('popover DOMNodeInserted');
 
-            var sortBy = thisTrellisto.getActiveSortByMenuItem();
+              var sortBy = thisTrellisto.getActiveSortByMenuItem();
 
-            // Update the vars to store the
-            // HTML for the card views
-            thisTrellisto.updateCardsHTMLVars(sortBy);
+              // Update the vars to store the
+              // HTML for the card views
+              thisTrellisto.updateCardsHTMLVars(sortBy);
 
-            thisTrellisto.filterCards(); // Show/hide the cards     
+              thisTrellisto.filterCards(); // Show/hide the cards     
 
-          });
-        });
+            });
+          }); // /chrome.storage.sync.get(['defaultSortBy', 'defaultFilter'], function (result)
+        }); // /chrome.storage.sync.get(['currentSortBy', 'currentFilter'], function (result)
       }); // #content .bind
     }; // end - trellistoInit
 
@@ -539,9 +555,9 @@
       filterList       += '</div>';
 
       filterList       += '<div class="trellisto-settings">';
-      filterList       += '<span class="trellisto-settings__label"><span class="icon-sm icon-gear trellisto-settings__label__icon"></span><span>Trellisto Settings:</span></span>';
-      filterList       += '<button id="trellisto-reset-settings" class="trellisto-settings__button">Use Favorite</button>';
-      //filterList       += '<span class="trellisto-settings__vert-bar" aria-hidden="true">|</span>';
+      filterList       += '<span id="trellisto-settings-title" class="trellisto-settings__label"><span class="icon-sm icon-gear trellisto-settings__label__icon"></span><span>Trellisto Settings:</span></span>';
+      filterList       += thisTrellisto.favoriteSettingsExist ? thisTrellisto.resetSettingsButtonHTML : '';
+      //filterList       += '<button id="trellisto-reset-settings" class="trellisto-settings__button">Use Favorite</button>';
       filterList       += '<button id="trellisto-save-settings" class="trellisto-settings__text-button">Save Favorite</button>';
       filterList       += '</div>';
 
@@ -571,13 +587,16 @@
             $(this).prop('disabled', 'disabled');
             $(this).addClass('trellisto-settings__text-button--saved');
             $(this).html('Saved <span class="icon-sm icon-check"></span>');
+            if (!$('#trellisto-reset-settings').length) {
+              $(thisTrellisto.resetSettingsButtonHTML).insertAfter('#trellisto-settings-title');
+              $('#trellisto-reset-settings').unbind('click');
+              $('#trellisto-reset-settings').click(thisTrellisto.resetSettingsButtonClick);
+            }
             thisTrellisto.saveFavoriteSettings();
           });
         }
         if (resetSettingsButton.length) {
-          resetSettingsButton.click(function(){
-            thisTrellisto.restoreFavoriteSettings();
-          });
+          resetSettingsButton.click(thisTrellisto.resetSettingsButtonClick);
         }
       }
 
@@ -887,6 +906,12 @@
         thisTrellisto.refreshGroups(result.defaultSortBy, result.defaultFilter);
         return;
       });
+    };
+
+    this.resetSettingsButtonClick = function () {
+      console.log('clicked');
+      thisTrellisto.restoreFavoriteSettings();
+      return;
     };
 
     var ran = 0;
