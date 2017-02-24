@@ -27,7 +27,10 @@ void 0===c?d&&"get"in d&&null!==(e=d.get(a,b))?e:(e=n.find.attr(a,b),null==e?voi
     // use as a reference within the methods
     var thisTrellisto = this;
 
-    this.version             = '1.1.1';
+    var manifest       = chrome.runtime.getManifest();
+
+    this.version             = manifest.version;
+    this.releaseDate         = 'February 24, 2017';
     this.cardClassName       = 'card-grid-container';
     this.cardHiddenClassName = 'trellisto-hidden';
     this.cardClass           = '.'+this.cardClassName;
@@ -359,36 +362,6 @@ void 0===c?d&&"get"in d&&null!==(e=d.get(a,b))?e:(e=n.find.attr(a,b),null==e?voi
 
     }; // end - appendCardGroupsByList
 
-    // Makes a group of cards for each unique
-    // board name and appends them to the DOM
-    /*
-    this.appendCardGroupsByBoard = function() {
-
-      console.log('appendCardGroupsByBoard');
-
-      var output = '';
-      
-      $.each(thisTrellisto.boards, function (i, board) {
-
-        var scrumTotal    = 0,
-            consumedTotal = 0;
-
-        // Find all cards for this list
-        var filtered = thisTrellisto.cards.filter(function(obj) {
-          return obj.board == board;
-        });
-
-        output += thisTrellisto.createCardGroup(filtered, board, 'icon-board');
-
-      });
-
-      // Add group to the DOM
-      //$('.js-cards-content').html(output);
-
-      //thisTrellisto.filterCards();
-
-    }; // end - appendCardGroupsByBoard
-    */
 
     // Generates "Sort by Due Date"
     // card groups
@@ -566,7 +539,9 @@ void 0===c?d&&"get"in d&&null!==(e=d.get(a,b))?e:(e=n.find.attr(a,b),null==e?voi
       filterList       += '</div>';
 
       filterList       += '<div class="trellisto-settings">';
-      filterList       += '<div class="trellisto-settings__label"><span class="icon-sm icon-information trellisto-settings__label__icon"></span><span>Questions or comments about Trellisto?</span> <a href="mailto:trellisto@duende.us?subject=Feedback About Trellisto v' + thisTrellisto.version + '">Send Feedback</a></div>';
+      filterList       += '<div class="trellisto-settings__label"><span class="icon-sm icon-information trellisto-settings__label__icon"></span><span>Questions or comments about Trellisto?</span> <a href="mailto:trellisto@duende.us?subject=Feedback About Trellisto v.' + thisTrellisto.version + '">Send Feedback</a>';
+      filterList       += '<span class="trellisto-settings__version">v.' + thisTrellisto.version + ' (' + thisTrellisto.releaseDate + ')</span>';
+      filterList       += '</div>';
       filterList       += '</div>';
 
       if (!$('.u-gutter').find('#filter-list-menu').length) {

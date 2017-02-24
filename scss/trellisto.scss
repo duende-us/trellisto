@@ -12,6 +12,7 @@ grunt build-production : Concatenate and minify files for production release
 */
 
 /* Base */
+@import "base/variables";
 @import "base/mixins";
 
 /* List Scrum Total */
@@ -97,4 +98,11 @@ grunt build-production : Concatenate and minify files for production release
 }
 .trellisto-settings__vert-bar {
   color: #D6DADC;
+}
+.trellisto-settings__version {
+  display: block;
+  @media screen and (min-width: $break-sm) {
+    display: inline;
+    float: right;
+  }
 }

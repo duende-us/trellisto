@@ -12,6 +12,16 @@ grunt build-production : Concatenate and minify files for production release
 */
 /* Base */
 /*
+ * Variables
+ */
+/* Typography */
+/* Colors */
+/* Accent Grays */
+/* Dimensions */
+/* Sreen Dimensions */
+/* Z-indexes */
+/* Variables for Bootstrap Select */
+/*
  * Mixins
  */
 /*
@@ -117,4 +127,14 @@ grunt build-production : Concatenate and minify files for production release
 
 .trellisto-settings__vert-bar {
   color: #D6DADC;
+}
+
+.trellisto-settings__version {
+  display: block;
+}
+@media screen and (min-width: 768px) {
+  .trellisto-settings__version {
+    display: inline;
+    float: right;
+  }
 }

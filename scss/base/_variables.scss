@@ -1,0 +1,49 @@
+/*
+ * Variables
+ */
+
+/* Typography */
+$font-sans: 'Source Sans Pro', sans-serif;
+$font-sans-condensed: 'UniversCondensed', 'Arial', sans-serif;
+$font-icons: 'FontAwesome';
+
+/* Colors */
+$black: #000000;
+$white: #FFFFFF;
+$lightyellow: #FDF1B4;
+$gold: #ECCB82;
+$bronze: #AF9761;
+
+/* Accent Grays */
+$offwhite: #F2F2F2; // 10% Gray
+$lightgray: #CCCCCC; // 25% Gray
+$gray: #666666; // 60% Gray
+$darkgray: #333333; // 90% Gray
+$darkgray-trans: rgba(51, 51, 51, 0.9); // 90% Gray with 90% transparency
+
+/* Dimensions */
+$border-radius-sm: 3px;
+
+/* Sreen Dimensions */
+$break-xxs : 320px;
+$break-xs  : 468px;
+$break-sm  : 768px;
+$break-md  : 992px;
+$break-lg  : 1200px;
+
+/* Z-indexes */
+$zindex-search: 9999;
+$zindex-navbar: 9998;
+$zindex-jump-menu-toggle: 9997;
+$zindex-navbar-menu-bg: 9996;
+$zindex-navbar-overlay: 9995;
+$zindex-jump-menu: 9994;
+$zindex-sticky-sidebar: 9993;
+$zindex-carousel-control: 9992;
+
+/* Variables for Bootstrap Select */
+$color-red-error         : rgb(185, 74, 72);
+$color-grey-arrow        : rgba(204, 204, 204, 0.2);
+$width-default           : 220px; // 3 960px-grid columns
+$zindex-select-dropdown  : 1060; // must be higher than a modal background (1050)
+$input-color-placeholder : #999;
