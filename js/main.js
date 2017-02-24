@@ -203,9 +203,9 @@
         // Grab any current settings from local storage
         chrome.storage.sync.get(['currentSortBy', 'currentFilter'], function (result) {
           // Grab any favorite settings from local storage
-          chrome.storage.sync.get(['defaultSortBy', 'defaultFilter'], function (result) {
+          chrome.storage.sync.get(['defaultSortBy', 'defaultFilter'], function (favResult) {
             // Check if favorite settings exist
-            thisTrellisto.favoriteSettingsExist = result.defaultSortBy ? true : false;
+            thisTrellisto.favoriteSettingsExist = favResult.defaultSortBy ? true : false;
           
             // If local storage for current settings exists,
             // then update thisTrellisto.currentSettings with
