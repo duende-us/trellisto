@@ -535,8 +535,8 @@
       filterList       += '</div>';
 
       filterList       += '<div class="trellisto-settings">';
-      filterList       += '<div class="trellisto-settings__label"><span class="icon-sm icon-information trellisto-settings__label__icon"></span><span>Questions or comments about Trellisto?</span> <a href="mailto:trellisto@duende.us?subject=Feedback About Trellisto v.' + thisTrellisto.version + '">Send Feedback</a>';
-      filterList       += '<span class="trellisto-settings__version">v.' + thisTrellisto.version + ' (' + thisTrellisto.releaseDate + ')</span>';
+      filterList       += '<div class="trellisto-settings__label"><span class="icon-sm icon-information trellisto-settings__label__icon"></span><span>Questions or comments about Trellisto?</span> <a href="mailto:trellisto@duende.us?subject=Feedback About Trellisto v' + thisTrellisto.version + '">Send Feedback</a>';
+      filterList       += '<span class="trellisto-settings__version">v' + thisTrellisto.version + ' (' + thisTrellisto.releaseDate + ')</span>';
       filterList       += '</div>';
       filterList       += '</div>';
 
