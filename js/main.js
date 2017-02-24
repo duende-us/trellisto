@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------------
     
-  Duende Trellisto, v1.1.1
+  Duende Trellisto, v1.1.2
 
   Authors     : Barrett Cox (http://barrettcox.com),
                 Amy Wu (http://duende.us)
