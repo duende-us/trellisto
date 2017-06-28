@@ -75,6 +75,7 @@ grunt build-production : Concatenate and minify files for production release
 
 .trellisto-settings__label {
   position: relative;
+  width: 100%;
   padding: 6px 8px 6px 28px;
   color: #8C8C8C;
 }

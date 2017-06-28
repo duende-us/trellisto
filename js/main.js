@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------------
     
-  Duende Trellisto, v1.1.3
+  Duende Trellisto, v1.1.4
 
   Authors     : Barrett Cox (http://barrettcox.com),
                 Amy Wu (http://duende.us)
@@ -159,8 +159,10 @@
           if ($('.pop-over').find('.js-sort-by-list').length) return;
           
           // Append 'Sort by list name' item
+          /*
           $('<li><a class="highlight-icon js-sort-by-list" href="#">Sort by list name <span class="icon-sm icon-check"></span></a></li>').appendTo('.pop-over-list');
-          
+          */
+
           // Pop over list items
           $('.pop-over-list li > a').click( function() {
 
@@ -479,7 +481,7 @@
           if(!$(card).hasClass(thisTrellisto.cardHiddenClassName)) {
             scrumTotal    += parseFloat(thisTrellisto.getCardScrum(card));
             consumedTotal += parseFloat(thisTrellisto.getCardConsumed(card));
-          }
+          } 
         });
 
         $('<span class="groupbylist-consumed-total">' + consumedTotal + '</span><span class="groupbylist-scrum-total">' + scrumTotal + '</span>').appendTo(groupTitle);
