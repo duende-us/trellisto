@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------------
     
-  Duende Trellisto, v1.1.2
+  Duende Trellisto, v1.1.3
 
   Authors     : Barrett Cox (http://barrettcox.com),
                 Amy Wu (http://duende.us)
@@ -189,16 +189,15 @@
 
         }); // /$('.pop-over').bind()
         
-        // Clears sync storage for testing purposes
-        /*
-        chrome.storage.sync.clear(function() {
-          console.log('Cleared');
-          var error = chrome.runtime.lastError;
-          if (error) {
-              console.error(error);
-          }
-        });
-        */
+        // Clears sync storage for testing purposes   
+        //chrome.storage.sync.clear(function() {
+        //  console.log('Cleared');
+        //  var error = chrome.runtime.lastError;
+        //  if (error) {
+        //      console.error(error);
+        //  }
+        //});
+        
 
         // Grab any current settings from local storage
         chrome.storage.sync.get(['currentSortBy', 'currentFilter'], function (result) {
@@ -216,11 +215,10 @@
               thisTrellisto.currentSettings.filterListSettings = result.currentFilter;
 
               // Delete any old filter settings that no longer exist
-              /*
-              $.each(thisTrellisto.currentSettings.filterListSettings, function (k, v) {
-                if (uniqueListsArray.indexOf(v.label) === -1) delete thisTrellisto.currentSettings.filterListSettings[k];
-              });
-              */
+              //$.each(thisTrellisto.currentSettings.filterListSettings, function (k, v) {
+              //  if (uniqueListsArray.indexOf(v.label) === -1) delete thisTrellisto.currentSettings.filterListSettings[k];
+              //});
+              
 
               // Add any new filter settings
               $.each(uniqueListObjSorted, function (k, v) {
@@ -506,8 +504,9 @@
     this.makeFilterMenu = function() {
       
       var filterListButton = '',
-          filterList       = '';
-
+          filterList       = '',
+          inProgress       = '<div class="trellisto-inprogress-message">Trellisto functionality has been temporarily disabled by the Trello update to the Cards view :-( Thank you for your patience while we work on the fix! <a href="#" id="trellisto-inprogress-message-dismiss">Dismiss</a></div>';
+      /*
       filterListButton += '<a id="filter-list-menu" class="quiet-button mod-with-image" href="#">';
       filterListButton +=     '<span class="icon-sm icon-overflow-menu-horizontal quiet-button-icon"></span>';
       filterListButton +=     '<span class="">Filter</span>';
@@ -535,12 +534,21 @@
       filterList       += '</div>';
 
       filterList       += '<div class="trellisto-settings">';
+      */
       filterList       += '<div class="trellisto-settings__label"><span class="icon-sm icon-information trellisto-settings__label__icon"></span><span>Questions or comments about Trellisto?</span> <a href="mailto:trellisto@duende.us?subject=Feedback About Trellisto v' + thisTrellisto.version + '">Send Feedback</a>';
       filterList       += '<span class="trellisto-settings__version">v' + thisTrellisto.version + ' (' + thisTrellisto.releaseDate + ')</span>';
       filterList       += '</div>';
-      filterList       += '</div>';
+      //filterList       += '</div>';
 
       if (!$('.u-gutter').find('#filter-list-menu').length) {
+
+        // In Progress messaging
+        $(inProgress).appendTo('.js-content > .window-module');
+        $('#trellisto-inprogress-message-dismiss').on('click', function(e){
+          e.preventDefault();
+          $('.trellisto-inprogress-message').hide();
+        });
+
         $(filterListButton).appendTo('.js-content > .window-module');
         $(filterList).appendTo('.js-content > .window-module');
 
@@ -650,11 +658,10 @@
         if (thisTrellisto.sortByBoardContent != '') {
           $('.js-cards-content').html('<div id="bsc_test"></div>' + thisTrellisto.sortByBoardContent);
         }
-        /*
-        else {
-          thisTrellisto.appendCardGroupsByBoard();
-        }
-        */
+        //else {
+        //  thisTrellisto.appendCardGroupsByBoard();
+        //}
+        
       }
       else
       if (isGroupByDueDate) {
@@ -846,13 +853,6 @@
       chrome.storage.sync.set({ 'currentSortBy': sortBy,
                                 'currentFilter': filterListSettings },
                                 function() {
-                                  /*
-                                  console.log( 'Current settings saved' );
-                                  console.log( 'sortBy: ' +
-                                               thisTrellisto.currentSettings.sortBy +
-                                               ', filter: ' +
-                                               thisTrellisto.currentSettings.filterListSettings );
-                                  */
                                   return;
                                 });
     };
@@ -867,10 +867,6 @@
       chrome.storage.sync.set({ 'defaultSortBy': defaultSortBy,
                                 'defaultFilter': defaultFilter },
                                 function() {
-                                  /*
-                                  console.log('saveFavoriteSettings');
-                                  console.log(defaultFilter);
-                                  */
                                   return;
                                 });
     };
@@ -907,7 +903,7 @@
         }
     }, 500);
 
-  } /*- $.trellisto -------------------------------*/
+  } // $.trellisto -------------------------------
 
   // Set up the trellisto params
   var params = {}; // URL for your idea template page
