@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------------
     
-  Duende Trellisto, v1.1.4
+  Duende Trellisto, v1.2.0
 
   Authors     : Barrett Cox (http://barrettcox.com),
                 Amy Wu (http://duende.us)
@@ -25,19 +25,24 @@
 
     var manifest       = chrome.runtime.getManifest();
 
-    this.version             = manifest.version;
-    this.releaseDate         = 'February 24, 2017';
-    this.cardClassName       = 'card-grid-container';
-    this.cardHiddenClassName = 'trellisto-hidden';
-    this.cardClass           = '.'+this.cardClassName;
-    this.currentSettings     = { sortBy: 'board',
-                                 filterListSettings: {
-                                   all: {
-                                     label: 'All',
-                                     selected: 1
-                                   }
-                                 }
-                               };
+    this.version                = manifest.version;
+    this.releaseDate            = 'November 1, 2017';
+    this.cardClassName          = 'list-card';//'card-grid-container';
+    this.cardContainerClassName = 'card-grid-container';
+    this.listClassName          = 'list-wrapper';
+    this.cardHiddenClassName    = 'trellisto-hidden';
+    this.cardClass              = '.' + this.cardClassName;
+    this.cardContainerClass     = '.' + this.cardContainerClassName;
+    this.listClass              = '.' + this.listClassName;
+    this.boardClass             = '.member-cards-board';
+    this.currentSettings        = { sortBy: 'board',
+                                    filterListSettings: {
+                                      all: {
+                                        label: 'All',
+                                        selected: 1
+                                      }
+                                    }
+                                  };
 
     this.trellistoList           = '#trellisto-pop-over-filter .trellisto-pop-over-list';
     this.cards                   = [];
@@ -47,41 +52,41 @@
     this.favoriteSettingsExist   = false;
     this.resetSettingsButtonHTML = '<button id="trellisto-reset-settings" class="trellisto-settings__button">Use Favorite</button>';
 
-    // Create cards object
-    this.trellistoInit = function () {
+    this.trellistoInitCards = function () {
+      var cards                = [],
+          lists                = [],
+          cardElements         = $(thisTrellisto.cardClass),
+          uniqueListKeys       = [],
+          uniqueListKeysLength = 0,
+          uniqueListObj        = {},
+          uniqueListObjSorted  = {},
+          sortBy               = thisTrellisto.getActiveSortByMenuItem();
 
-      $('#content').bind('DOMNodeInserted', function () {
-          
-        $('#content').unbind('DOMNodeInserted');
-
-        var cards                = [],
-            lists                = [],
-            cardElements         = $(thisTrellisto.cardClass),
-            uniqueListKeys       = []
-            uniqueListKeysLength = 0,
-            uniqueListObj        = {},
-            uniqueListObjSorted  = {},
-            sortBy               = thisTrellisto.getActiveSortByMenuItem();
-  
         // Update the vars to store the
         // HTML for the card views
         thisTrellisto.updateCardsHTMLVars(sortBy);
 
         $.each(cardElements, function (i, el) {
-            
-          var jsCard        = $(el).find('.js-card').html(),
-              scrum         = thisTrellisto.getCardScrum(el),
-              consumed      = thisTrellisto.getCardConsumed(el),
-              dueDatePast   = $(el).find('.is-due-past > .badge-text'),
-              dueDateSoon   = $(el).find('.is-due-soon > .badge-text'),
-              dueDateFuture = $(el).find('.is-due-future > .badge-text'),
-              dueDateObj    = {},
-              listLabel     = $(el).find('.list-card-position').children('strong:first-child').text(),
-              board         = sortBy == 'board' ?
-                              $(el).parents('.window-module').find('.window-module-title h3 a').text() :
-                              $(el).find('.list-card-position > strong:last-child').text();
 
-          if (dueDatePast.length) {
+          var jsCard        = sortBy == 'board' ? $(el).prop('outerHTML') : $(el).closest('.js-card').html(),
+              //jsCard        = sortBy == 'board' ? $(el).html : $(el).find('.js-card').html(),
+
+              //scrum         = thisTrellisto.getCardScrum(el),
+              //consumed      = thisTrellisto.getCardConsumed(el),
+
+              scrumAndConsumed = thisTrellisto.getCardScrumFromBoard(el),
+              dueDatePast      = $(el).find('.is-due-past > .badge-text'),
+              dueDateSoon      = $(el).find('.is-due-soon > .badge-text'),
+              dueDateFuture    = $(el).find('.is-due-future > .badge-text'),
+              dueDateObj       = {},
+              listLabel        = sortBy == 'board' ?
+                                 $(el).closest('.list').find('.list-header-name').text() :
+                                 $(el).closest(thisTrellisto.cardContainerClass).find('.list-card-position').children('strong:first-child').text(),
+              board            = sortBy == 'board' ?
+                                 $(el).closest(thisTrellisto.boardClass).find('.board-header a:first-child .board-header-btn-text').text() : //$(el).parents('.window-module').find('.window-module-title h3 a').text() :
+                                 $(el).closest(thisTrellisto.cardContainerClass).find('.list-card-position > strong:last-child').text();
+
+          if (dueDatePast.length) { 
             dueDateObj.past = dueDatePast.text();
           }
           else
@@ -109,15 +114,16 @@
           if (thisTrellisto.boards.indexOf(board) === -1) thisTrellisto.boards.push(board);
           
           cards.push({ jsCard    : jsCard,
-                       scrum     : scrum,
-                       consumed  : consumed,
+                       scrum     : scrumAndConsumed.scrum,
+                       consumed  : scrumAndConsumed.consumed,
                        dueDate   : dueDateObj,
                        list      : list,
                        listLabel : listLabel,
-                       board     : board }); 
+                       board     : board });
+          
         });
-
-        // Set the global variable for cards
+        
+        // Set the variable for cards
         thisTrellisto.cards = cards;
         
         // Sort list keys alphabetically
@@ -159,9 +165,7 @@
           if ($('.pop-over').find('.js-sort-by-list').length) return;
           
           // Append 'Sort by list name' item
-          /*
           $('<li><a class="highlight-icon js-sort-by-list" href="#">Sort by list name <span class="icon-sm icon-check"></span></a></li>').appendTo('.pop-over-list');
-          */
 
           // Pop over list items
           $('.pop-over-list li > a').click( function() {
@@ -194,7 +198,7 @@
         // Clears sync storage for testing purposes   
         //chrome.storage.sync.clear(function() {
         //  console.log('Cleared');
-        //  var error = chrome.runtime.lastError;
+        //  var error = chrome.runtime. lastError;
         //  if (error) {
         //      console.error(error);
         //  }
@@ -203,8 +207,10 @@
 
         // Grab any current settings from local storage
         chrome.storage.sync.get(['currentSortBy', 'currentFilter'], function (result) {
+
           // Grab any favorite settings from local storage
           chrome.storage.sync.get(['defaultSortBy', 'defaultFilter'], function (favResult) {
+
             // Check if favorite settings exist
             thisTrellisto.favoriteSettingsExist = favResult.defaultSortBy ? true : false;
           
@@ -213,6 +219,7 @@
             // the stored settings, 
             // otherwise set and save the current settings
             if (result.currentSortBy) {
+
               thisTrellisto.currentSettings.sortBy = result.currentSortBy;
               thisTrellisto.currentSettings.filterListSettings = result.currentFilter;
 
@@ -265,8 +272,6 @@
               // This terminates redundant function calls
               if ($('.js-content').find('[class="groupbylist-scrum-total"]').length) return;
 
-              console.log('popover DOMNodeInserted');
-
               var sortBy = thisTrellisto.getActiveSortByMenuItem();
 
               // Update the vars to store the
@@ -278,7 +283,23 @@
             });
           }); // /chrome.storage.sync.get(['defaultSortBy', 'defaultFilter'], function (result)
         }); // /chrome.storage.sync.get(['currentSortBy', 'currentFilter'], function (result)
-      }); // #content .bind
+    }
+
+    // Create cards object
+    this.trellistoInit = function () {
+
+      //$('#content').bind('DOMNodeInserted', function () {
+          
+        //$('#content').unbind('DOMNodeInserted');
+
+        var myVar = setInterval(function(){
+                      if ($(thisTrellisto.cardClass).length) {
+                        thisTrellisto.trellistoInitCards();
+                        clearInterval(myVar);
+                      } 
+                    }, 3000);
+
+      //}); // #content .bind
     }; // end - trellistoInit
 
     // Checks the cards title text and returns scrum points
@@ -292,6 +313,20 @@
       if (matchesScrum != null) scrum = matchesScrum[0].replace(/\(|\)/g,'');
 
       return scrum;
+
+    }; // end - getCardScrum
+
+    // Checks the cards title text and returns scrum points
+    this.getCardScrumFromBoard = function(el) {
+
+      var scrum   = $(el).find('.badge.point-count').not('.consumed').text(),
+          consumed = $(el).find('.badge.point-count.consumed').text();
+
+          scrum = scrum ? scrum : 0;
+          consumed = consumed ? consumed : 0;
+
+      return { scrum: scrum,
+               consumed: consumed };
 
     }; // end - getCardScrum
 
@@ -504,11 +539,11 @@
 
     // Create the Filter menu
     this.makeFilterMenu = function() {
-      
+
       var filterListButton = '',
-          filterList       = '',
-          inProgress       = '<div class="trellisto-inprogress-message">Trellisto functionality has been temporarily disabled by the Trello update to the Cards view :-( Thank you for your patience while we work on the fix! <a href="#" id="trellisto-inprogress-message-dismiss">Dismiss</a></div>';
-      /*
+          filterList       = '';
+          //inProgress       = '<div class="trellisto-inprogress-message">Trellisto functionality has been temporarily disabled by the Trello update to the Cards view :-( Thank you for your patience while we work on the fix! <a href="#" id="trellisto-inprogress-message-dismiss">Dismiss</a></div>';
+      
       filterListButton += '<a id="filter-list-menu" class="quiet-button mod-with-image" href="#">';
       filterListButton +=     '<span class="icon-sm icon-overflow-menu-horizontal quiet-button-icon"></span>';
       filterListButton +=     '<span class="">Filter</span>';
@@ -536,7 +571,7 @@
       filterList       += '</div>';
 
       filterList       += '<div class="trellisto-settings">';
-      */
+      
       filterList       += '<div class="trellisto-settings__label"><span class="icon-sm icon-information trellisto-settings__label__icon"></span><span>Questions or comments about Trellisto?</span> <a href="mailto:trellisto@duende.us?subject=Feedback About Trellisto v' + thisTrellisto.version + '">Send Feedback</a>';
       filterList       += '<span class="trellisto-settings__version">v' + thisTrellisto.version + ' (' + thisTrellisto.releaseDate + ')</span>';
       filterList       += '</div>';
@@ -545,7 +580,7 @@
       if (!$('.u-gutter').find('#filter-list-menu').length) {
 
         // In Progress messaging
-        $(inProgress).appendTo('.js-content > .window-module');
+        //$(inProgress).appendTo('.js-content > .window-module');
         $('#trellisto-inprogress-message-dismiss').on('click', function(e){
           e.preventDefault();
           $('.trellisto-inprogress-message').hide();
@@ -586,6 +621,7 @@
       }
 
       $(thisTrellisto.trellistoList).on('change', '.list-filter-all', function (e) {
+
         //e.preventDefault();
 
         thisTrellisto.enableSaveButton();
@@ -651,6 +687,7 @@
         $('.pop-over').removeClass('is-shown');
         // Clear the popover list
         $('.pop-over').find('.pop-over-content').html('');
+
         // Append list card group to the DOM
         thisTrellisto.appendCardGroupsByList();
       }
@@ -690,11 +727,12 @@
                    '<span class="window-module-title-icon icon-lg ' + icon + '"></span>' +
                    '<h3>' + title + '</h3></div><div class="u-gutter float-cards u-clearfix js-list">';
 
+
       // Construct a card for each object
       $.each(cards, function (i, card) {
 
         var listName    = card.list,
-            cardClasses = thisTrellisto.cardClassName,
+            cardClasses = thisTrellisto.cardContainerClassName,
             cardDisplay = '',
             dueDate     = card.dueDate.past ? card.dueDate.past : card.dueDate.future ? card.dueDate.future : false;
 
@@ -703,6 +741,13 @@
           cardClasses += ' ' + thisTrellisto.cardHiddenClassName;
           cardDisplay = ' style="display: none;"';
         }
+
+        //<div class="card-grid-container">
+          //<div class="js-card">
+            //<a class="list-card js-member-droppable ui-droppable" href="/c/vM9VBAT8/5-fix-contact-us-page-alignment-issues-https-wwwspigitcom-contact-us"><div class="list-card-cover js-card-cover"></div><span class="icon-sm icon-edit list-card-operation dark-hover js-open-quick-card-editor js-card-menu"></span><div class="list-card-stickers-area hide"><div class="stickers js-card-stickers"></div></div><div class="list-card-details"><div class="list-card-labels js-card-labels"><span class="card-label card-label-green mod-card-front" title="Completed.">Completed.</span></div><span class="list-card-title js-card-name" dir="auto"><span class="card-short-id hide">#5</span>Fix Contact us page alignment issues https://www.spigit.com/contact-us/</span><div class="badges"><span class="js-badges"><div class="badge is-icon-only" title="You are subscribed to this card."><span class="badge-icon icon-sm icon-subscribe"></span></div><div class="badge is-due-past" title="This card is past due."><span class="badge-icon icon-sm icon-clock"></span><span class="badge-text">Jul 9, 2015</span></div><div class="badge" title="Comments"><span class="badge-icon icon-sm icon-comment"></span><span class="badge-text">2</span></div></span><span class="js-plugin-badges"><span></span></span></div><div class="list-card-members js-list-card-members"><div class="member js-member-on-card-menu" data-idmem="5320cba8d807417f7d2e1f58"><img class="member-avatar" height="30" width="30" src="https://trello-avatars.s3.amazonaws.com/6539e78ce1149b83e78885c8ea9b717e/30.png" srcset="https://trello-avatars.s3.amazonaws.com/6539e78ce1149b83e78885c8ea9b717e/30.png 1x, https://trello-avatars.s3.amazonaws.com/6539e78ce1149b83e78885c8ea9b717e/50.png 2x" alt="Chris Goelkel (chrisgoelkel)" title="Chris Goelkel (chrisgoelkel)"><span class="member-gold-badge" title="This member has Trello Gold."></span></div><div class="member js-member-on-card-menu" data-idmem="5553b8316515502121fae5d1"><img class="member-avatar" height="30" width="30" src="https://trello-avatars.s3.amazonaws.com/95db28b493c6b5d2c39e85afd0701f79/30.png" srcset="https://trello-avatars.s3.amazonaws.com/95db28b493c6b5d2c39e85afd0701f79/30.png 1x, https://trello-avatars.s3.amazonaws.com/95db28b493c6b5d2c39e85afd0701f79/50.png 2x" alt="Barrett Cox (barrettcox1)" title="Barrett Cox (barrettcox1)"><span class="member-gold-badge" title="This member has Trello Gold."></span></div></div></div><p class="list-card-dropzone">Drop files to upload.</p><p class="list-card-dropzone-limited">Too many attachments.</p></a>
+          //</div>
+          //<p class="list-card-position quiet">in <strong>Archive</strong> on <strong>Spigit.com</strong></p>
+        //</div>
 
         module += '<div class="' + cardClasses + '"' + cardDisplay + '>';
         module +=   '<div class="js-card">' + card.jsCard + '</div>';
@@ -762,12 +807,35 @@
     this.getCardsInList = function (list) {
       //var list = thisTrellisto.currentSettings.filterListSettings[list];
       // Find all cards that contain a matching list
-      var cardsInList = $(thisTrellisto.cardClass).filter(function() {
-        var label     = $(this).find('.list-card-position > strong:first-child').text(),
+      var cardsInList = $(thisTrellisto.cardContainerClass).filter(function() {
+        var label = $(this).find('.list-card-position > strong:first-child').text(),
             formatted = thisTrellisto.formatName(label);
+
         return formatted == list;
       });
       return cardsInList;
+    };
+
+    // Returns an array with all cards in the list for the Board view
+    this.getCardsInListByBoard = function (list) {
+      var cardsInList = $(thisTrellisto.listClass).filter(function() {
+        var label = $(this).find('.list-header .list-header-name').text(),
+        formatted = thisTrellisto.formatName(label);
+        return formatted == list;
+      });
+      return cardsInList;
+    };
+
+    // Returns an array with all cards in the list for the Board view
+    this.getList = function (list) {
+      var listEl = $('.window-module').filter(function() {
+        var label     = $(this).find('.window-module-title h3').text(),
+            formatted = thisTrellisto.formatName(label);
+        return formatted == list;
+      });
+      var cards = listEl.find(thisTrellisto.cardContainerClass);
+      listEl = listEl.add(cards);
+      return listEl;
     };
 
     this.filterCards = function () {
@@ -776,31 +844,55 @@
 
       $('.list-filter:checked').each(function() {
         var listName    = this.id.replace('filter-', ''),
-            cardsInList = thisTrellisto.getCardsInList(listName);
+            selected;
 
         // Update the current setting for this checkbox
         newFilterListSettings[listName].selected = 1;
 
-        // Find all card parents that are already trellisto-hidden
-        cardsInList = $(cardsInList).filter('.trellisto-hidden');
+        if (thisTrellisto.currentSettings.sortBy == 'board') {
+          var cardsInList = thisTrellisto.getCardsInListByBoard(listName)
+          // Find all card parents that are already trellisto-hidden
+          selected = $(cardsInList).filter('.trellisto-hidden');
+        }
+        else
+        if (thisTrellisto.currentSettings.sortBy == 'list') {
+          var listEl = thisTrellisto.getList(listName);
+          // Find the list if it is already hidden
+          selected = $(listEl).filter('.trellisto-hidden');
+        }
+        else {
+          var cardsInList = thisTrellisto.getCardsInList(listName);
+          // Find all card parents that are already trellisto-hidden
+          selected = $(cardsInList).filter('.trellisto-hidden');
+        }
 
-        // Remove trellisto-hidden class from cards
-        $(cardsInList).removeClass(thisTrellisto.cardHiddenClassName);
+        // Remove trellisto-hidden class from cards/lists
+        $(selected).removeClass(thisTrellisto.cardHiddenClassName);
+        $(selected).fadeIn();
 
-        $(cardsInList).fadeIn();
       });
 
       $('.list-filter').not(':checked').each(function(i, el) {
-        var listName    = this.id.replace('filter-', ''),
-            cardsInList = thisTrellisto.getCardsInList(listName);
+        var listName    = this.id.replace('filter-', '');
 
         // Update the current setting for this checkbox
         newFilterListSettings[listName].selected = 0;
 
-        // Add trellisto-hidden class to cardsInList
-        $(cardsInList).addClass(thisTrellisto.cardHiddenClassName);
+        if (thisTrellisto.currentSettings.sortBy == 'board') {
+          var selected = thisTrellisto.getCardsInListByBoard(listName)
+        }
+        else
+        if (thisTrellisto.currentSettings.sortBy == 'list') {
+          var selected = thisTrellisto.getList(listName);
+        }
+        else {
+          var selected = thisTrellisto.getCardsInList(listName);
+        }
 
-        $(cardsInList).fadeOut();
+        // Add trellisto-hidden class to cards/lists
+        $(selected).addClass(thisTrellisto.cardHiddenClassName);
+        $(selected).fadeOut();
+        
       });
 
       thisTrellisto.updateCurrentSettings(thisTrellisto.currentSettings.sortBy, newFilterListSettings);
@@ -819,14 +911,28 @@
     // Hides the entire group if all children are hidden,
     // or shows the group if any children are visible
     this.showOrHideGroups = function() {
-      $('.window-module').has('.window-module-title').each(function() {
-        var visibleChildren = $(this).find(thisTrellisto.cardClass+':not(.trellisto-hidden)');
-        if (!visibleChildren.length && $(this).not(':hidden')) {
-          $(this).fadeOut();
-        } else if ($(this).is(':hidden')) {
-          $(this).fadeIn();
-        }
-      });
+      if (thisTrellisto.currentSettings.sortBy == 'board') {
+        thisTrellisto.boardClass
+        $(thisTrellisto.boardClass).each(function() {
+          var visibleChildren = $(this).find(thisTrellisto.listClass + ':not(.trellisto-hidden)');
+          if (!visibleChildren.length && $(this).not(':hidden')) {
+            $(this).fadeOut();
+          } else if ($(this).is(':hidden')) {
+            $(this).fadeIn();
+          }
+        });
+      }
+      else
+      if (thisTrellisto.currentSettings.sortBy == 'dueDate'){
+        $('.window-module').has('.window-module-title').each(function() {
+          var visibleChildren = $(this).find(thisTrellisto.cardContainerClass + ':not(.trellisto-hidden)');
+          if (!visibleChildren.length && $(this).not(':hidden')) {
+            $(this).fadeOut();
+          } else if ($(this).is(':hidden')) {
+            $(this).fadeIn();
+          }
+        });
+      }
     };
 
     // Remove all card groups from the DOM
@@ -882,7 +988,6 @@
     };
 
     this.resetSettingsButtonClick = function () {
-      console.log('clicked');
       thisTrellisto.restoreFavoriteSettings();
       return;
     };

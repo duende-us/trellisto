@@ -78,6 +78,7 @@ grunt build-production : Concatenate and minify files for production release
   width: 100%;
   padding: 6px 8px 6px 28px;
   color: #8C8C8C;
+  line-height: 22px;
 }
 .trellisto-settings__label__icon {
   left: 7px;
@@ -144,6 +145,11 @@ grunt build-production : Concatenate and minify files for production release
   padding: 15px 30px;
   text-align: left;
   margin: 0 auto 15px;
+}
+
+#filter-list-menu,
+#trellisto-pop-over-filter {
+  width: 100%;
 }
 
 @media screen and (min-width: 768px) {
