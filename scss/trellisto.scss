@@ -106,3 +106,18 @@ grunt build-production : Concatenate and minify files for production release
     float: right;
   }
 }
+.member-cards-options {
+  flex-flow: row wrap;
+}
+.trellisto-inprogress-message {
+  width: 100%;
+  background-color: #E2E4E6;
+  padding: 15px 30px;
+  text-align: left;
+  margin: 0 auto 15px;
+}
+
+#filter-list-menu,
+#trellisto-pop-over-filter {
+  width: 100%;
+}

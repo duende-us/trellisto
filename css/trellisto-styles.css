@@ -75,10 +75,8 @@ grunt build-production : Concatenate and minify files for production release
 
 .trellisto-settings__label {
   position: relative;
-  width: 100%;
   padding: 6px 8px 6px 28px;
   color: #8C8C8C;
-  line-height: 22px;
 }
 .trellisto-settings__label__icon {
   left: 7px;
@@ -134,11 +132,17 @@ grunt build-production : Concatenate and minify files for production release
 .trellisto-settings__version {
   display: block;
 }
-
+@media screen and (min-width: 768px) {
+  .trellisto-settings__version {
+    display: inline;
+    float: right;
+  }
+}
 
 .member-cards-options {
   flex-flow: row wrap;
 }
+
 .trellisto-inprogress-message {
   width: 100%;
   background-color: #E2E4E6;
@@ -150,11 +154,4 @@ grunt build-production : Concatenate and minify files for production release
 #filter-list-menu,
 #trellisto-pop-over-filter {
   width: 100%;
-}
-
-@media screen and (min-width: 768px) {
-  .trellisto-settings__version {
-    display: inline;
-    float: right;
-  }
 }
