@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------------
     
-  Duende Trellisto, v1.2.0
+  Duende Trellisto, v1.1.2
 
   Authors     : Barrett Cox (http://barrettcox.com),
                 Amy Wu (http://duende.us)
@@ -26,7 +26,7 @@
     var manifest       = chrome.runtime.getManifest();
 
     this.version                = manifest.version;
-    this.releaseDate            = 'November 1, 2017';
+    this.releaseDate            = 'December 28, 2017';
     this.cardClassName          = 'list-card';//'card-grid-container';
     this.cardContainerClassName = 'card-grid-container';
     this.listClassName          = 'list-wrapper';
@@ -53,6 +53,7 @@
     this.resetSettingsButtonHTML = '<button id="trellisto-reset-settings" class="trellisto-settings__button">Use Favorite</button>';
 
     this.trellistoInitCards = function () {
+
       var cards                = [],
           lists                = [],
           cardElements         = $(thisTrellisto.cardClass),
@@ -62,13 +63,9 @@
           uniqueListObjSorted  = {},
           sortBy               = thisTrellisto.getActiveSortByMenuItem();
 
-        // Update the vars to store the
-        // HTML for the card views
-        thisTrellisto.updateCardsHTMLVars(sortBy);
-
         $.each(cardElements, function (i, el) {
 
-          var jsCard        = sortBy == 'board' ? $(el).prop('outerHTML') : $(el).closest('.js-card').html(),
+          var jsCard           = sortBy == 'board' ? $(el).prop('outerHTML') : $(el).closest('.js-card').html(),
               //jsCard        = sortBy == 'board' ? $(el).html : $(el).find('.js-card').html(),
 
               //scrum         = thisTrellisto.getCardScrum(el),
@@ -79,8 +76,10 @@
               dueDateSoon      = $(el).find('.is-due-soon > .badge-text'),
               dueDateFuture    = $(el).find('.is-due-future > .badge-text'),
               dueDateObj       = {},
+              listWrapperEl    = $(el).closest(thisTrellisto.listClass),
+              listEl           = listWrapperEl.find('.list'),
               listLabel        = sortBy == 'board' ?
-                                 $(el).closest('.list').find('.list-header-name').text() :
+                                 listEl.find('.list-header-name').text() :
                                  $(el).closest(thisTrellisto.cardContainerClass).find('.list-card-position').children('strong:first-child').text(),
               board            = sortBy == 'board' ?
                                  $(el).closest(thisTrellisto.boardClass).find('.board-header a:first-child .board-header-btn-text').text() : //$(el).parents('.window-module').find('.window-module-title h3 a').text() :
@@ -104,11 +103,32 @@
           // Format the list name
           list = thisTrellisto.formatName(listLabel);
 
+          // If list key already exists in the object...
+          if (list in uniqueListObj) {
+
+            // If the listLabel value in the object is different than listLabel
+            if (uniqueListObj[list] != listLabel) {
+
+              // Change the list key so to make it unique
+              list += '_' + i;
+            }
+          }
+
           // Add only unique list names to the object
           if (!(list in uniqueListObj)) {
             uniqueListObj[list] = listLabel;
             uniqueListKeys.push(list);
           }
+
+          // Update the list name data attribute in the DOM
+          if (sortBy == 'board') {
+            //console.log('listWrapperEl.length:');
+            //console.log(listWrapperEl.length);
+            console.log('listWrapperEl:');
+            console.log(listWrapperEl);
+          listWrapperEl.attr('data-trellisto-list-name', list);
+          //console.log(listWrapperEl.attr('data-trellisto-list-name'));
+        }
 
           // Push only unique board names to the array
           if (thisTrellisto.boards.indexOf(board) === -1) thisTrellisto.boards.push(board);
@@ -122,6 +142,10 @@
                        board     : board });
           
         });
+
+        // Update the vars to store the
+        // HTML for the card views
+        thisTrellisto.updateCardsHTMLVars(sortBy);
         
         // Set the variable for cards
         thisTrellisto.cards = cards;
@@ -228,7 +252,6 @@
               //  if (uniqueListsArray.indexOf(v.label) === -1) delete thisTrellisto.currentSettings.filterListSettings[k];
               //});
               
-
               // Add any new filter settings
               $.each(uniqueListObjSorted, function (k, v) {
                 // If list name already saved locally, then skip this iteration...
@@ -244,6 +267,7 @@
                                                   thisTrellisto.currentSettings.filterListSettings);
               thisTrellisto.saveCurrentSettings(thisTrellisto.currentSettings.sortBy,
                                                 thisTrellisto.currentSettings.filterListSettings);
+
             }
             else {
               console.log('No storage');
@@ -381,7 +405,7 @@
           return obj.list == k;
         });
 
-        output += thisTrellisto.createCardGroup(filtered, v.label, 'icon-list');
+        output += thisTrellisto.createCardGroup(filtered, v.label, 'icon-list', k);
 
       });
 
@@ -484,11 +508,11 @@
 
         if (!v.selected) allChecked = '';
 
-        $('<label for="filter-' + k + '"><input type="checkbox" class="list-filter" id="filter-' + k + '" data-trellisto-name="' + k + '"' + checked + ' >' + v.label + '</label>').appendTo(thisTrellisto.trellistoList);
+        $('<label for="filter-' + k + '"><input type="checkbox" class="list-filter" id="filter-' + k + '" data-trellisto-list-name="' + k + '"' + checked + ' >' + v.label + '</label>').appendTo(thisTrellisto.trellistoList);
       });
 
       // Prepend All
-      $('<label for="filter-all"><input type="checkbox" class="list-filter-all" id="filter-all" data-trellisto-name="all"' + allChecked + ' >All</label>').prependTo(thisTrellisto.trellistoList);
+      $('<label for="filter-all"><input type="checkbox" class="list-filter-all" id="filter-all" data-trellisto-list-name="all"' + allChecked + ' >All</label>').prependTo(thisTrellisto.trellistoList);
 
     }; // end - appendFilterList
 
@@ -573,7 +597,7 @@
       filterList       += '<div class="trellisto-settings">';
       
       filterList       += '<div class="trellisto-settings__label"><span class="icon-sm icon-information trellisto-settings__label__icon"></span><span>Questions or comments about Trellisto?</span> <a href="mailto:trellisto@duende.us?subject=Feedback About Trellisto v' + thisTrellisto.version + '">Send Feedback</a>';
-      filterList       += '<span class="trellisto-settings__version">v' + thisTrellisto.version + ' (' + thisTrellisto.releaseDate + ')</span>';
+      filterList       += '&nbsp;<span class="trellisto-settings__version">v' + thisTrellisto.version + ' (' + thisTrellisto.releaseDate + ')</span>';
       filterList       += '</div>';
       //filterList       += '</div>';
 
@@ -721,11 +745,14 @@
     } // end - refreshGroups
 
 
-    this.createCardGroup = function (cards, title, icon) {
+    this.createCardGroup = function (cards, title, icon, k) {
 
-      var module = '<div class="window-module"><div class="window-module-title">' +
-                   '<span class="window-module-title-icon icon-lg ' + icon + '"></span>' +
-                   '<h3>' + title + '</h3></div><div class="u-gutter float-cards u-clearfix js-list">';
+      var module = '<div class="window-module"';
+
+      module += typeof k !== 'undefined' ? ' data-trellisto-list-name="' + k + '"' : '';
+      module += '><div class="window-module-title">';
+      module += '<span class="window-module-title-icon icon-lg ' + icon + '"></span>';
+      module += '<h3>' + title + '</h3></div><div class="u-gutter float-cards u-clearfix js-list">';
 
 
       // Construct a card for each object
@@ -819,9 +846,16 @@
     // Returns an array with all cards in the list for the Board view
     this.getCardsInListByBoard = function (list) {
       var cardsInList = $(thisTrellisto.listClass).filter(function() {
-        var label = $(this).find('.list-header .list-header-name').text(),
-        formatted = thisTrellisto.formatName(label);
-        return formatted == list;
+        var listAttrVal = $(this).attr('data-trellisto-list-name');
+
+        console.log('this:');
+        console.log($(this));
+        console.log('listAttrVal:');
+        console.log(listAttrVal);
+        //var label = $(this).find('.list-header .list-header-name').text(),
+        //formatted = thisTrellisto.formatName(label);
+
+        return listAttrVal == list;
       });
       return cardsInList;
     };
@@ -829,9 +863,8 @@
     // Returns an array with all cards in the list for the Board view
     this.getList = function (list) {
       var listEl = $('.window-module').filter(function() {
-        var label     = $(this).find('.window-module-title h3').text(),
-            formatted = thisTrellisto.formatName(label);
-        return formatted == list;
+        var listAttrVal = $(this).attr('data-trellisto-list-name');
+        return listAttrVal == list;
       });
       var cards = listEl.find(thisTrellisto.cardContainerClass);
       listEl = listEl.add(cards);

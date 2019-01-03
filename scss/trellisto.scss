@@ -79,10 +79,13 @@ grunt build-production : Concatenate and minify files for production release
   border: none;
   font-weight: 400;
   text-decoration: underline;
+  @include trellisto-border-radius(0);
   &:hover,
   &:focus {
     background: none;
     background-color: transparent;
+    border: none;
+    @include trellisto-box-shadow(none);
   }
   &[disabled],
   &[disabled]:hover {
