@@ -54,36 +54,31 @@
 
     this.trellistoInitCards = function () {
 
-      var cards                = [],
-          lists                = [],
-          cardElements         = $(thisTrellisto.cardClass),
-          uniqueListKeys       = [],
-          uniqueListKeysLength = 0,
-          uniqueListObj        = {},
-          uniqueListObjSorted  = {},
-          sortBy               = thisTrellisto.getActiveSortByMenuItem();
+      var cards                     = [],
+          lists                     = [],
+          cardElements              = $(thisTrellisto.cardClass),
+          uniqueListKeys            = [],
+          uniqueListKeysLength      = 0,
+          uniqueListObj             = {},
+          uniqueListObjSorted       = {},
+          sortBy                    = thisTrellisto.getActiveSortByMenuItem();
 
         $.each(cardElements, function (i, el) {
 
-          var jsCard           = sortBy == 'board' ? $(el).prop('outerHTML') : $(el).closest('.js-card').html(),
-              //jsCard        = sortBy == 'board' ? $(el).html : $(el).find('.js-card').html(),
-
-              //scrum         = thisTrellisto.getCardScrum(el),
-              //consumed      = thisTrellisto.getCardConsumed(el),
-
+          var cardEl           = sortBy == 'board' ? $(el) : $(el).closest('.js-card'),
               scrumAndConsumed = thisTrellisto.getCardScrumFromBoard(el),
-              dueDatePast      = $(el).find('.is-due-past > .badge-text'),
-              dueDateSoon      = $(el).find('.is-due-soon > .badge-text'),
-              dueDateFuture    = $(el).find('.is-due-future > .badge-text'),
+              dueDatePast      = cardEl.find('.is-due-past > .badge-text'),
+              dueDateSoon      = cardEl.find('.is-due-soon > .badge-text'),
+              dueDateFuture    = cardEl.find('.is-due-future > .badge-text'),
               dueDateObj       = {},
-              listWrapperEl    = $(el).closest(thisTrellisto.listClass),
+              listWrapperEl    = cardEl.closest(thisTrellisto.listClass),
               listEl           = listWrapperEl.find('.list'),
               listLabel        = sortBy == 'board' ?
                                  listEl.find('.list-header-name').text() :
-                                 $(el).closest(thisTrellisto.cardContainerClass).find('.list-card-position').children('strong:first-child').text(),
+                                 cardEl.closest(thisTrellisto.cardContainerClass).find('.list-card-position').children('strong:first-child').text(),
               board            = sortBy == 'board' ?
-                                 $(el).closest(thisTrellisto.boardClass).find('.board-header a:first-child .board-header-btn-text').text() : //$(el).parents('.window-module').find('.window-module-title h3 a').text() :
-                                 $(el).closest(thisTrellisto.cardContainerClass).find('.list-card-position > strong:last-child').text();
+                                 cardEl.closest(thisTrellisto.boardClass).find('.board-header a:first-child .board-header-btn-text').text() : //cardEl.parents('.window-module').find('.window-module-title h3 a').text() :
+                                 cardEl.closest(thisTrellisto.cardContainerClass).find('.list-card-position > strong:last-child').text();
 
           if (dueDatePast.length) { 
             dueDateObj.past = dueDatePast.text();
@@ -122,18 +117,20 @@
 
           // Update the list name data attribute in the DOM
           if (sortBy == 'board') {
-            //console.log('listWrapperEl.length:');
-            //console.log(listWrapperEl.length);
-            console.log('listWrapperEl:');
-            console.log(listWrapperEl);
-          listWrapperEl.attr('data-trellisto-list-name', list);
-          //console.log(listWrapperEl.attr('data-trellisto-list-name'));
-        }
+            listWrapperEl.attr('data-trellisto-list-name', list);
+          }
+
+          else
+          if (sortBy == 'dueDate') {
+            cardEl.closest(thisTrellisto.cardContainerClass).attr('data-trellisto-list-name', list);
+          }
+
+          var cardStr = sortBy == 'board' ? cardEl.prop('outerHTML') : cardEl.html();
 
           // Push only unique board names to the array
           if (thisTrellisto.boards.indexOf(board) === -1) thisTrellisto.boards.push(board);
           
-          cards.push({ jsCard    : jsCard,
+          cards.push({ cardStr    : cardStr,
                        scrum     : scrumAndConsumed.scrum,
                        consumed  : scrumAndConsumed.consumed,
                        dueDate   : dueDateObj,
@@ -153,10 +150,16 @@
         // Sort list keys alphabetically
         uniqueListKeys.sort();
         uniqueListKeysLength = uniqueListKeys.length;
+
         for (i = 0; i < uniqueListKeysLength; i++) {
           k = uniqueListKeys[i];
+
+          // Add to sorted list objects
           uniqueListObjSorted[k] = uniqueListObj[k];
         }
+
+        // Update settings
+        //thisTrellisto.currentSettings.filterListSettings = updatedFilterListSettings;
 
         chrome.storage.sync.get(['defaultSortBy', 'defaultFilter'], function (result) {
           if(result.defaultSortBy) {
@@ -226,14 +229,15 @@
         //  if (error) {
         //      console.error(error);
         //  }
-        //});
-        
+        //});     
 
         // Grab any current settings from local storage
         chrome.storage.sync.get(['currentSortBy', 'currentFilter'], function (result) {
 
           // Grab any favorite settings from local storage
           chrome.storage.sync.get(['defaultSortBy', 'defaultFilter'], function (favResult) {
+
+            var updatedFilter = {};
 
             // Check if favorite settings exist
             thisTrellisto.favoriteSettingsExist = favResult.defaultSortBy ? true : false;
@@ -244,13 +248,15 @@
             // otherwise set and save the current settings
             if (result.currentSortBy) {
 
-              thisTrellisto.currentSettings.sortBy = result.currentSortBy;
-              thisTrellisto.currentSettings.filterListSettings = result.currentFilter;
-
-              // Delete any old filter settings that no longer exist
-              //$.each(thisTrellisto.currentSettings.filterListSettings, function (k, v) {
-              //  if (uniqueListsArray.indexOf(v.label) === -1) delete thisTrellisto.currentSettings.filterListSettings[k];
-              //});
+              // Filter out any keys for missing lists
+              for (var k in result.currentFilter) {
+                if (k == 'all' || uniqueListKeys.indexOf(k) > -1) {
+                  updatedFilter[k] = result.currentFilter[k];
+                }
+              }
+              
+              thisTrellisto.currentSettings.filterListSettings = updatedFilter;
+              thisTrellisto.currentSettings.sortBy             = result.currentSortBy;
               
               // Add any new filter settings
               $.each(uniqueListObjSorted, function (k, v) {
@@ -392,6 +398,12 @@
     this.appendCardGroupsByList = function() {
 
       var output = '';
+
+      //console.log('uniqueListObj:');
+      //console.log(uniqueListObj);
+
+      console.log('thisTrellisto.currentSettings.filterListSettings:');
+      console.log(thisTrellisto.currentSettings.filterListSettings);
       
       $.each(thisTrellisto.currentSettings.filterListSettings, function (k, v) {
 
@@ -719,7 +731,7 @@
       if (isGroupByBoard) {
         $('.js-sort-text > strong:first-child').text('board');
         if (thisTrellisto.sortByBoardContent != '') {
-          $('.js-cards-content').html('<div id="bsc_test"></div>' + thisTrellisto.sortByBoardContent);
+          $('.js-cards-content').html(thisTrellisto.sortByBoardContent);
         }
         //else {
         //  thisTrellisto.appendCardGroupsByBoard();
@@ -730,7 +742,7 @@
       if (isGroupByDueDate) {
         $('.js-sort-text > strong:first-child').text('due date');
         if (thisTrellisto.sortByDueDateContent != '') {
-          $('.js-cards-content').html('<div id="bsc_test"></div>' + thisTrellisto.sortByDueDateContent);
+          $('.js-cards-content').html(thisTrellisto.sortByDueDateContent);
         }
         else {
           thisTrellisto.appendCardGroupsByDueDate();
@@ -777,7 +789,7 @@
         //</div>
 
         module += '<div class="' + cardClasses + '"' + cardDisplay + '>';
-        module +=   '<div class="js-card">' + card.jsCard + '</div>';
+        module +=   '<div class="js-card">' + card.cardStr + '</div>';
         module +=   '<p class="list-card-position quiet">' +
                     'in ' +
                     '<strong>' + card.listLabel + '</strong>' +
@@ -832,13 +844,10 @@
 
     // Returns an array with all cards in the list
     this.getCardsInList = function (list) {
-      //var list = thisTrellisto.currentSettings.filterListSettings[list];
       // Find all cards that contain a matching list
       var cardsInList = $(thisTrellisto.cardContainerClass).filter(function() {
-        var label = $(this).find('.list-card-position > strong:first-child').text(),
-            formatted = thisTrellisto.formatName(label);
-
-        return formatted == list;
+        var listAttrVal = $(this).attr('data-trellisto-list-name');
+        return listAttrVal == list;
       });
       return cardsInList;
     };
@@ -847,14 +856,6 @@
     this.getCardsInListByBoard = function (list) {
       var cardsInList = $(thisTrellisto.listClass).filter(function() {
         var listAttrVal = $(this).attr('data-trellisto-list-name');
-
-        console.log('this:');
-        console.log($(this));
-        console.log('listAttrVal:');
-        console.log(listAttrVal);
-        //var label = $(this).find('.list-header .list-header-name').text(),
-        //formatted = thisTrellisto.formatName(label);
-
         return listAttrVal == list;
       });
       return cardsInList;
