@@ -11,5 +11,4 @@ See [LICENSE.md](LICENSE.md)
 ### Bug fixes
 
 * Trellisto now works in Trello's latest update to the Cards view.
-
 * Fixed issue where special characters in list names are ignored.
