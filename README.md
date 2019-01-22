@@ -1,4 +1,4 @@
-# Trellisto for Trello (v1.1.4)
+# Trellisto for Trello (v1.1.5)
 
 A Chrome extension for Trello that displays all existing cards grouped by list.
 
