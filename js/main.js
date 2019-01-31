@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------------
     
-  Duende Trellisto, v1.1.5
+  Duende Trellisto, v1.2.0
 
   Authors     : Barrett Cox (http://barrettcox.com),
                 Amy Wu (http://duende.us)
@@ -23,10 +23,10 @@
     // use as a reference within the methods
     var thisTrellisto = this;
 
-    var manifest       = chrome.runtime.getManifest();
+    var manifest = chrome.runtime.getManifest();
 
     this.version                = manifest.version;
-    this.releaseDate            = 'December 28, 2017';
+    this.releaseDate            = 'January 31, 2019';
     this.cardClassName          = 'list-card';//'card-grid-container';
     this.cardContainerClassName = 'card-grid-container';
     this.listClassName          = 'list-wrapper';
@@ -691,23 +691,26 @@
         });
 
         // Save and reset settings buttons
-        var saveSettingsButton  = $('#trellisto-save-settings'),
-            resetSettingsButton = $('#trellisto-reset-settings');
+        var saveSettingsButton          = $('#trellisto-save-settings'),
+            resetSettingsButtonSelector = '#trellisto-reset-settings',
+            resetSettingsButton         = $(resetSettingsButtonSelector);
+
         if (saveSettingsButton.length) {
           saveSettingsButton.click(function(){
             $(this).prop('disabled', 'disabled');
             $(this).addClass('trellisto-settings__text-button--saved');
             $(this).html('Saved <span class="icon-sm icon-check"></span>');
+
             if (!$('#trellisto-reset-settings').length) {
               $(thisTrellisto.resetSettingsButtonHTML).insertAfter('#trellisto-settings-title');
-              $('#trellisto-reset-settings').unbind('click');
-              $('#trellisto-reset-settings').click(thisTrellisto.resetSettingsButtonClick);
             }
+
             thisTrellisto.saveFavoriteSettings();
           });
         }
+
         if (resetSettingsButton.length) {
-          resetSettingsButton.click(thisTrellisto.resetSettingsButtonClick);
+          $(document).on('click', resetSettingsButtonSelector, thisTrellisto.resetSettingsButtonClick);
         }
       }
 
